@@ -2,8 +2,12 @@ package id.ac.ui.cs.advprog.mysawit.Controller;
 
 import id.ac.ui.cs.advprog.mysawit.Model.Plantation;
 import id.ac.ui.cs.advprog.mysawit.Repository.PlantationRepository;
-import id.ac.ui.cs.advprog.mysawit.Service.PlantationService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 
