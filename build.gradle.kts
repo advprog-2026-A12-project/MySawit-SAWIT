@@ -3,6 +3,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 plugins {
     java
     jacoco
+    checkstyle
     id("org.springframework.boot") version "3.3.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.sonarqube") version "5.0.0.4638"
@@ -67,4 +68,16 @@ sonarqube {
 tasks.withType<Test> {
     useJUnitPlatform()
     systemProperty("spring.profiles.active", "test")
+}
+
+checkstyle {
+    toolVersion = "10.17.0"
+    configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
+}
+
+tasks.withType<Checkstyle> {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
 }
