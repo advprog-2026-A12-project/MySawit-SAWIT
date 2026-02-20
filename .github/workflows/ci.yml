@@ -58,6 +58,12 @@ jobs:
   dummy-deploy:
     needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
     steps:
-      - name: Fake deployment
-        run: echo "Deployment skipped because this is dummy CD"
+      - name: Deploy to Staging
+        if: github.ref == 'refs/heads/staging'
+        run: echo "Deploying SAWIT service to STAGING environment..."
+
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/main'
+        run: echo "Deploying SAWIT service to PRODUCTION environment..."
