@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.mysawit.controller;
+package id.ac.ui.cs.advprog.mysawit.Controller;
 
-import id.ac.ui.cs.advprog.mysawit.model.Delivery;
-import id.ac.ui.cs.advprog.mysawit.repository.DeliveryRepository;
+import id.ac.ui.cs.advprog.mysawit.Model.Delivery;
+import id.ac.ui.cs.advprog.mysawit.Repository.DeliveryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
