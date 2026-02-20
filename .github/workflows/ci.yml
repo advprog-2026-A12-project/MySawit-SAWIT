@@ -11,26 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup JDK 21
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
-      # 3️⃣ Give Gradle wrapper execute permission
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      # 4️⃣ Build, Test, Jacoco
       - name: Build and Test
         run: ./gradlew clean test jacocoTestReport
 
-      # 5️⃣ SonarCloud Scan
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
