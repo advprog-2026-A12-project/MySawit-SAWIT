@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.mysawit.Service;
+package id.ac.ui.cs.advprog.mysawit.service;
 
-import id.ac.ui.cs.advprog.mysawit.Model.Plantation;
-import id.ac.ui.cs.advprog.mysawit.Repository.PlantationRepository;
+import id.ac.ui.cs.advprog.mysawit.model.Plantation;
+import id.ac.ui.cs.advprog.mysawit.repository.PlantationRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 

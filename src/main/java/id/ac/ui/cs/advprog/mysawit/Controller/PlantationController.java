@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.mysawit.Controller;
+package id.ac.ui.cs.advprog.mysawit.controller;
 
-import id.ac.ui.cs.advprog.mysawit.Model.Plantation;
-import id.ac.ui.cs.advprog.mysawit.Repository.PlantationRepository;
+import id.ac.ui.cs.advprog.mysawit.model.Plantation;
+import id.ac.ui.cs.advprog.mysawit.repository.PlantationRepository;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
