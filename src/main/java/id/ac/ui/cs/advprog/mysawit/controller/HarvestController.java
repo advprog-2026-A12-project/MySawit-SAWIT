@@ -2,7 +2,10 @@ package id.ac.ui.cs.advprog.mysawit.Controller;
 
 import id.ac.ui.cs.advprog.mysawit.Model.HarvestStatus;
 import id.ac.ui.cs.advprog.mysawit.Service.HarvestService;
+import id.ac.ui.cs.advprog.mysawit.Service.HarvestServiceImpl;
+import id.ac.ui.cs.advprog.mysawit.dto.HarvestDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.dto.HarvestRequest;
+import id.ac.ui.cs.advprog.mysawit.dto.HarvestResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,32 +18,52 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/harvest")
 @RequiredArgsConstructor
 public class HarvestController {
 
     private final HarvestService harvestService;
+    private final HarvestServiceImpl harvestServiceImpl;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> submit(
-            @RequestHeader("X-USER-ID") UUID buruhId,
+
+    // CREATE HARVEST
+    //  support JSON
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HarvestResponse> submitJson(
+            @RequestHeader("X-USER-ID") UUID userId,
             @RequestHeader("X-ROLE") String role,
-            @Valid @RequestPart HarvestRequest request,
-            @RequestPart(required = false) List<MultipartFile> photos
+            @Valid @RequestBody HarvestRequest request
     ) {
-
-        return ResponseEntity.status(201)
-                .body(harvestService.submitHarvest(
-                        request,
-                        buruhId,
-                        role
-                ));
+        HarvestResponse response = harvestService.submitHarvest(request, userId, role);
+        return ResponseEntity.status(201).body(response);
     }
 
+
+    // CREATE HARVEST + UPLOAD FOTO (Multipart)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<HarvestResponse> submitMultipart(
+            @RequestHeader("X-USER-ID") UUID userId,
+            @RequestHeader("X-ROLE") String role,
+            @Valid @ModelAttribute HarvestRequest request,
+            @RequestPart(required = false) List<MultipartFile> photos
+    ) {
+        // Simpan harvest
+        HarvestResponse response = harvestService.submitHarvest(request, userId, role);
+
+        // Simpan foto jika ada
+        if (photos != null && !photos.isEmpty()) {
+            harvestServiceImpl.savePhotos(response.getId(), photos);
+        }
+
+        return ResponseEntity.status(201).body(response);
+    }
+
+    // GET MY HARVEST
     @GetMapping("/my")
-    public ResponseEntity<?> myHarvest(
-            @RequestHeader("X-USER-ID") UUID buruhId,
+    public ResponseEntity<List<HarvestResponse>> myHarvest(
+            @RequestHeader("X-USER-ID") UUID userId,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate startDate,
@@ -52,19 +75,16 @@ public class HarvestController {
             @RequestParam(required = false)
             HarvestStatus status
     ) {
-
-        return ResponseEntity.ok(
-                harvestService.getMyHarvest(
-                        buruhId,
-                        startDate,
-                        endDate,
-                        status
-                )
-        );
+        List<HarvestResponse> list = harvestService.getMyHarvest(userId, startDate, endDate, status);
+        return ResponseEntity.ok(list);
     }
 
+    // GET HARVEST DETAIL
     @GetMapping("/{id}")
-    public ResponseEntity<?> detail(@PathVariable UUID id) {
-        return ResponseEntity.ok(harvestService.getDetail(id));
+    public ResponseEntity<HarvestDetailResponse> detail(
+            @PathVariable UUID id
+    ) {
+        HarvestDetailResponse detail = harvestService.getDetail(id);
+        return ResponseEntity.ok(detail);
     }
 }
