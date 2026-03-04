@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.dto;
+package id.ac.ui.cs.advprog.mysawit.harvest.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

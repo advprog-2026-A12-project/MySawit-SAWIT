@@ -1,13 +1,13 @@
-package id.ac.ui.cs.advprog.mysawit.Service;
+package id.ac.ui.cs.advprog.mysawit.harvest.service;
 
-import id.ac.ui.cs.advprog.mysawit.Model.Harvest;
-import id.ac.ui.cs.advprog.mysawit.Model.HarvestPhoto;
-import id.ac.ui.cs.advprog.mysawit.Model.HarvestStatus;
+import id.ac.ui.cs.advprog.mysawit.harvest.model.Harvest;
+import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestPhoto;
+import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
 
-import id.ac.ui.cs.advprog.mysawit.Repository.HarvestRepository;
-import id.ac.ui.cs.advprog.mysawit.dto.HarvestDetailResponse;
-import id.ac.ui.cs.advprog.mysawit.dto.HarvestRequest;
-import id.ac.ui.cs.advprog.mysawit.dto.HarvestResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.repository.HarvestRepository;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestRequest;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestResponse;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

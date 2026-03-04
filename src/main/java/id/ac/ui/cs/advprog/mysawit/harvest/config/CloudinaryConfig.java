@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.Config; // Sesuaikan package jika berbeda
+package id.ac.ui.cs.advprog.mysawit.harvest.config; // Sesuaikan package jika berbeda
 
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Value;

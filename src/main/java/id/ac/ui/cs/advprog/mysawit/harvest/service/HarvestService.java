@@ -1,9 +1,9 @@
-package id.ac.ui.cs.advprog.mysawit.Service;
+package id.ac.ui.cs.advprog.mysawit.harvest.service;
 
-import id.ac.ui.cs.advprog.mysawit.Model.HarvestStatus;
-import id.ac.ui.cs.advprog.mysawit.dto.HarvestDetailResponse;
-import id.ac.ui.cs.advprog.mysawit.dto.HarvestRequest;
-import id.ac.ui.cs.advprog.mysawit.dto.HarvestResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestRequest;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestResponse;
 
 import java.time.LocalDate;
 import java.util.List;
