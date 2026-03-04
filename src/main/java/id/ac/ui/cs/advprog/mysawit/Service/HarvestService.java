@@ -19,4 +19,7 @@ public interface HarvestService {
 
     // Ambil detail hasil panen
     HarvestDetailResponse getDetail(UUID harvestId);
+
+    // delete hasil panen untuk testing karena ada validasi 1 submit hasil panen sehari
+    void deleteHarvest(UUID harvestId);
 }

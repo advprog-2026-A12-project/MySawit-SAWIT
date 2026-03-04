@@ -87,4 +87,13 @@ public class HarvestController {
         HarvestDetailResponse detail = harvestService.getDetail(id);
         return ResponseEntity.ok(detail);
     }
+
+    // DELETE HARVEST untuk testing
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteHarvest(
+            @PathVariable UUID id
+    ) {
+        harvestService.deleteHarvest(id);
+        return ResponseEntity.ok().build(); // Mengembalikan status 200 OK
+    }
 }

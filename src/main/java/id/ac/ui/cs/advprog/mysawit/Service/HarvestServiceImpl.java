@@ -48,9 +48,9 @@ public class HarvestServiceImpl implements HarvestService {
 
         LocalDate today = LocalDate.now();
 //        // Validasi submit sekali per hari
-//        if (harvestRepository.existsByBuruhIdAndHarvestDate(buruhId, today)) {
-//            throw new HarvestAlreadySubmittedException("Sudah submit panen hari ini");
-//        }
+        if (harvestRepository.existsByBuruhIdAndHarvestDate(buruhId, today)) {
+            throw new HarvestAlreadySubmittedException("Sudah submit panen hari ini");
+        }
 
         Harvest harvest = Harvest.builder()
                 .buruhId(buruhId)
@@ -138,5 +138,16 @@ public class HarvestServiceImpl implements HarvestService {
                 .status(harvest.getStatus())
                 .photos(photoUrls)
                 .build();
+    }
+
+    // Delete Harvest (Untuk testing)
+    @Override
+    public void deleteHarvest(UUID harvestId) {
+        // Cek apakah datanya ada
+        Harvest harvest = harvestRepository.findById(harvestId)
+                .orElseThrow(() -> new RuntimeException("Harvest not found"));
+
+        // Hapus dari database
+        harvestRepository.delete(harvest);
     }
 }
