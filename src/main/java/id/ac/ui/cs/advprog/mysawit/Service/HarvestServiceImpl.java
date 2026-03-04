@@ -1,12 +1,14 @@
 package id.ac.ui.cs.advprog.mysawit.Service;
 
-import id.ac.ui.cs.advprog.mysawit.Model.*;
+import id.ac.ui.cs.advprog.mysawit.Model.Harvest;
+import id.ac.ui.cs.advprog.mysawit.Model.HarvestPhoto;
+import id.ac.ui.cs.advprog.mysawit.Model.HarvestStatus;
+
 import id.ac.ui.cs.advprog.mysawit.Repository.HarvestRepository;
 import id.ac.ui.cs.advprog.mysawit.dto.HarvestDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.dto.HarvestRequest;
 import id.ac.ui.cs.advprog.mysawit.dto.HarvestResponse;
 
-// Import untuk Cloudinary
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 
@@ -26,8 +28,6 @@ import java.util.UUID;
 public class HarvestServiceImpl implements HarvestService {
 
     private final HarvestRepository harvestRepository;
-
-    // Tambahkan variabel cloudinary di sini
     private final Cloudinary cloudinary;
 
     // Custom Exception
@@ -68,7 +68,12 @@ public class HarvestServiceImpl implements HarvestService {
 
     // Get My Harvest
     @Override
-    public List<HarvestResponse> getMyHarvest(UUID buruhId, LocalDate startDate, LocalDate endDate, HarvestStatus status) {
+    public List<HarvestResponse> getMyHarvest(
+            UUID buruhId,
+            LocalDate startDate,
+            LocalDate endDate,
+            HarvestStatus status
+    ) {
         List<Harvest> harvests = harvestRepository.findWithFilter(buruhId, startDate, endDate, status);
         return harvests.stream().map(this::mapToResponse).toList();
     }
@@ -82,7 +87,7 @@ public class HarvestServiceImpl implements HarvestService {
         return mapToDetail(harvest);
     }
 
-    // Save Photos - DIREVISI UNTUK CLOUDINARY
+    // Save Photos
     public void savePhotos(UUID harvestId, List<MultipartFile> photos) {
         Harvest harvest = harvestRepository.findById(harvestId)
                 .orElseThrow(() -> new RuntimeException("Harvest not found"));
