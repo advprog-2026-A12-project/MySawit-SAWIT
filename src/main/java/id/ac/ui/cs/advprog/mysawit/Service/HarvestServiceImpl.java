@@ -2,21 +2,23 @@ package id.ac.ui.cs.advprog.mysawit.Service;
 
 import id.ac.ui.cs.advprog.mysawit.Model.*;
 import id.ac.ui.cs.advprog.mysawit.Repository.HarvestRepository;
-import id.ac.ui.cs.advprog.mysawit.Service.HarvestService;
 import id.ac.ui.cs.advprog.mysawit.dto.HarvestDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.dto.HarvestRequest;
 import id.ac.ui.cs.advprog.mysawit.dto.HarvestResponse;
+
+// Import untuk Cloudinary
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -24,6 +26,9 @@ import java.util.UUID;
 public class HarvestServiceImpl implements HarvestService {
 
     private final HarvestRepository harvestRepository;
+
+    // Tambahkan variabel cloudinary di sini
+    private final Cloudinary cloudinary;
 
     // Custom Exception
     public static class HarvestAlreadySubmittedException extends RuntimeException {
@@ -77,7 +82,7 @@ public class HarvestServiceImpl implements HarvestService {
         return mapToDetail(harvest);
     }
 
-    // Save Photos
+    // Save Photos - DIREVISI UNTUK CLOUDINARY
     public void savePhotos(UUID harvestId, List<MultipartFile> photos) {
         Harvest harvest = harvestRepository.findById(harvestId)
                 .orElseThrow(() -> new RuntimeException("Harvest not found"));
@@ -88,20 +93,21 @@ public class HarvestServiceImpl implements HarvestService {
 
         for (MultipartFile file : photos) {
             try {
-                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path path = Paths.get("uploads/" + filename);
-                Files.createDirectories(path.getParent());
-                Files.write(path, file.getBytes());
+                // Upload file langsung ke Cloudinary
+                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+
+                // Ambil link URL publik (https) dari hasil upload
+                String imageUrl = uploadResult.get("secure_url").toString();
 
                 HarvestPhoto photo = HarvestPhoto.builder()
-                        .fileUrl("/uploads/" + filename)
+                        .fileUrl(imageUrl) // Simpan link Cloudinary ke database
                         .harvest(harvest)
                         .build();
 
                 harvest.getPhotos().add(photo);
 
             } catch (IOException e) {
-                throw new RuntimeException("Failed to save photo", e);
+                throw new RuntimeException("Gagal upload foto ke Cloudinary", e);
             }
         }
 
