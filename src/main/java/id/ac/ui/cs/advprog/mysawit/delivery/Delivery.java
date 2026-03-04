@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.Model;
+package id.ac.ui.cs.advprog.mysawit.delivery;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
