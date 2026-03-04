@@ -53,7 +53,7 @@ public class HarvestServiceImpl implements HarvestService {
                 .kilogram(request.getKilogram())
                 .reportNote(request.getReportNote())
                 .status(HarvestStatus.PENDING)
-                .photos(new ArrayList<>()) // pastikan tidak null
+                .photos(new ArrayList<>())
                 .build();
 
         Harvest saved = harvestRepository.save(harvest);
