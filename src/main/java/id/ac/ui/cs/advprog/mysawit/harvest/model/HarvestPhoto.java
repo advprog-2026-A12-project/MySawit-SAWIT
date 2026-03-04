@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.Model;
+package id.ac.ui.cs.advprog.mysawit.harvest.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
