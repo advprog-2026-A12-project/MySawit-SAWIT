@@ -123,4 +123,9 @@ public class HarvestController {
         harvestService.deleteHarvest(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
+    }
 }
