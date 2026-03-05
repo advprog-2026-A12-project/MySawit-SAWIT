@@ -28,7 +28,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/harvest")
 @RequiredArgsConstructor
@@ -104,6 +104,6 @@ public class HarvestController {
             @PathVariable UUID id
     ) {
         harvestService.deleteHarvest(id);
-        return ResponseEntity.ok().build(); // Mengembalikan status 200 OK
+        return ResponseEntity.ok().build();
     }
 }
