@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS postgis;
 
-CREATE TABLE kebun (
+CREATE TABLE IF NOT EXISTS kebun (
                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                        nama VARCHAR(100) NOT NULL,
                        kode VARCHAR(50) NOT NULL UNIQUE,
@@ -33,7 +33,7 @@ CREATE UNIQUE INDEX idx_kebun_mandor
     ON kebun(mandor_id)
     WHERE mandor_id IS NOT NULL;
 
-CREATE TABLE kebun_supir (
+CREATE TABLE IF NOT EXISTS kebun_supir (
                              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                              kebun_id UUID NOT NULL REFERENCES kebun(id) ON DELETE CASCADE,
                              supir_id UUID NOT NULL,
