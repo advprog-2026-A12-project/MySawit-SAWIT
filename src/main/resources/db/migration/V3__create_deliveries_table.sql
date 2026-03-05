@@ -1,6 +1,7 @@
 CREATE TABLE harvest_deliveries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     supir_id UUID NOT NULL,
+    supir_name VARCHAR(255),
     mandor_id UUID NOT NULL,
     harvest_id UUID NOT NULL REFERENCES harvests(id) ON DELETE CASCADE,
     payload_kg DOUBLE PRECISION NOT NULL CHECK (payload_kg >= 1 AND payload_kg <= 400),
