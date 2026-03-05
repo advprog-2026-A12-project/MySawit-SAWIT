@@ -1,4 +1,4 @@
-CREATE TABLE harvest_deliveries (
+CREATE TABLE IF NOT EXISTS harvest_deliveries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     supir_id UUID NOT NULL,
     supir_name VARCHAR(255),
