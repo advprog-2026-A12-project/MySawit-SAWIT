@@ -17,7 +17,7 @@ USER ${USER_NAME}
 WORKDIR /opt/mysawit
 COPY --from=builder --chown=${USER_UID}:${USER_GID} /src/mysawit/build/libs/*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8082
 
 ENTRYPOINT ["java"]
 CMD ["-jar", "app.jar"]
