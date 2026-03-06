@@ -1,0 +1,57 @@
+package id.ac.ui.cs.advprog.mysawit.delivery.security;
+
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+@Component
+@Order(1)
+public class JwtFilter implements Filter {
+
+   private final JwtUtil jwtUtil;
+
+   public JwtFilter(JwtUtil jwtUtil) {
+      this.jwtUtil = jwtUtil;
+   }
+
+   @Override
+   public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+           throws IOException, ServletException {
+      HttpServletRequest request = (HttpServletRequest) req;
+      HttpServletResponse response = (HttpServletResponse) res;
+
+      if (!request.getRequestURI().startsWith("/api")) {
+         chain.doFilter(request, response);
+         return;
+      }
+
+      String authHeader = request.getHeader("Authorization");
+
+      if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+         response.setStatus(401);
+         response.setContentType("application/json");
+         response.getWriter().write("{\"error\":\"Missing or invalid Authorization header\"}");
+         return;
+      }
+
+      String token = authHeader.substring(7);
+
+      if (!jwtUtil.isValid(token)) {
+         response.setStatus(401);
+         response.setContentType("application/json");
+         response.getWriter().write("{\"error\":\"Invalid or expired token\"}");
+         return;
+      }
+
+      Claims claims = jwtUtil.extractClaims(token);
+      request.setAttribute("userId", claims.getSubject());
+      request.setAttribute("userRole", claims.get("role", String.class));
+      request.setAttribute("userName", claims.get("name", String.class));
+
+      chain.doFilter(request, response);
+   }
+}
