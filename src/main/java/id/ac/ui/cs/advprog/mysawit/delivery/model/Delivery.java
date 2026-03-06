@@ -1,28 +1,15 @@
 package id.ac.ui.cs.advprog.mysawit.delivery.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "harvest_deliveries")
-@Getter
-@Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Delivery {
 
    @Id
@@ -41,6 +28,9 @@ public class Delivery {
    @Column(name = "mandor_id", columnDefinition = "uuid")
    private String mandorId;
 
+   @Column(name = "mandor_name")
+   private String mandorName;
+
    @NotNull
    @Column(name = "harvest_id", columnDefinition = "uuid")
    private String harvestId;
@@ -50,12 +40,24 @@ public class Delivery {
    @Max(value = 400, message = "Muatan tidak boleh melebihi 400 Kg")
    private Double payloadKg;
 
+   @Column(name = "approved_payload_kg")
+   private Double approvedPayloadKg;
+
    @Column(nullable = false, length = 50)
    private String status = "MEMUAT";
+
+   @Column(name = "rejection_reason", columnDefinition = "TEXT")
+   private String rejectionReason;
 
    @CreationTimestamp
    @Column(name = "created_at", updatable = false)
    private ZonedDateTime createdAt;
+
+   @Column(name = "sent_at")
+   private ZonedDateTime sentAt;
+
+   @Column(name = "arrived_at")
+   private ZonedDateTime arrivedAt;
 
    @UpdateTimestamp
    @Column(name = "updated_at")
