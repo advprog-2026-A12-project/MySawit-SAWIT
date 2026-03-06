@@ -36,8 +36,10 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    runtimeOnly("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("com.cloudinary:cloudinary-http44:1.36.0")
+    testImplementation("com.h2database:h2")
 }
 
 tasks.withType<Test> {
