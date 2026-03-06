@@ -5,9 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface DeliveryRepository extends JpaRepository<Delivery, String> {
-   List<Delivery> findBySupirId(String supirId);
-   List<Delivery> findByMandorId(String mandorId);
+   List<Delivery> findBySupirId(UUID supirId);
+   List<Delivery> findByMandorId(UUID mandorId);
+   List<Delivery> findByStatus(String status);
 }

@@ -15,8 +15,12 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "harvest_deliveries")
@@ -25,26 +29,25 @@ public class Delivery {
 
    @Id
    @GeneratedValue(strategy = GenerationType.UUID)
-   @Column(columnDefinition = "uuid")
-   private String id;
+   private UUID id;
 
    @NotNull
    @Column(name = "supir_id", columnDefinition = "uuid")
-   private String supirId;
+   private UUID supirId;
 
    @Column(name = "supir_name")
    private String supirName;
 
    @NotNull
    @Column(name = "mandor_id", columnDefinition = "uuid")
-   private String mandorId;
+   private UUID mandorId;
 
    @Column(name = "mandor_name")
    private String mandorName;
 
    @NotNull
    @Column(name = "harvest_id", columnDefinition = "uuid")
-   private String harvestId;
+   private UUID harvestId;
 
    @Column(name = "payload_kg", nullable = false)
    @Min(value = 1, message = "Muatan tidak boleh kosong")
