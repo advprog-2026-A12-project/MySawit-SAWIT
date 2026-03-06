@@ -13,7 +13,7 @@ import java.util.UUID;
 @Repository
 public interface KebunRepository extends JpaRepository<Kebun, UUID> {
 
-    boolean existsByKode(String kode);
+    boolean existsByKodeAndActiveTrue(String kode);
 
     Optional<Kebun> findByIdAndActiveTrue(UUID id);
 

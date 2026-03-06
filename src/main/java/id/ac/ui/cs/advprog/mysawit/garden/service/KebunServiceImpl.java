@@ -27,7 +27,7 @@ public class KebunServiceImpl implements KebunService {
     @Override
     @Transactional
     public KebunDetailResponse createKebun(KebunCreateRequest request) {
-        if (kebunRepository.existsByKode(request.getKode())) {
+        if (kebunRepository.existsByKodeAndActiveTrue(request.getKode())) {
             throw new DuplicateKodeKebunException(request.getKode());
         }
 
