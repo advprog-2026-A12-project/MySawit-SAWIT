@@ -30,7 +30,7 @@ public class DeliveryController {
    public ResponseEntity<?> createDelivery(@RequestBody CreateDeliveryRequest request, HttpServletRequest req) {
       String role = (String) req.getAttribute("userRole");
       if (!"MANDOR".equals(role)) {
-         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Akses ditolak. Hanya Mandor yang dapat membuat penugasan.");
+         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Akses ditolak. Hanya untuk Mandor");
       }
 
       UUID mandorId = (UUID) req.getAttribute("userId");
@@ -61,7 +61,7 @@ public class DeliveryController {
 
       String role = (String) req.getAttribute("userRole");
       if (!"SUPIR_TRUK".equals(role)) {
-         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Akses ditolak. Hanya Supir Truk yang dapat mengubah status.");
+         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Akses ditolak. Hanya untuk supir");
       }
 
       Delivery updated = deliveryService.updateStatus(id, status);
