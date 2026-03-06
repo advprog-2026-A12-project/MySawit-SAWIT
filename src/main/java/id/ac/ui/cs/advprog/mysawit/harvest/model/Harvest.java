@@ -35,19 +35,26 @@ public class Harvest {
     private UUID id;
 
     @Column(name = "buruh_id", nullable = false)
-    private UUID buruhId; // reference ke AUTH service
+    private UUID buruhId;
 
+    @Column(nullable = false)
     private LocalDate harvestDate;
 
+    @Column(nullable = false)
     private Double kilogram;
 
     private String reportNote;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private HarvestStatus status;
 
     private String rejectionReason;
 
-    @OneToMany(mappedBy = "harvest", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "harvest",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<HarvestPhoto> photos;
 }

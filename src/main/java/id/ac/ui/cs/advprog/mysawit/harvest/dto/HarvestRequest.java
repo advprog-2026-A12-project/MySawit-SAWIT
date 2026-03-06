@@ -8,7 +8,7 @@ public class HarvestRequest {
 
     @NotNull(message = "Kilogram wajib diisi")
     @Min(value = 1, message = "Kilogram minimal 1")
-    private Double kilogram; // ubah dari Integer ke Double
+    private Double kilogram;
 
     @NotBlank(message = "Catatan wajib diisi")
     private String reportNote;

@@ -1,34 +1,22 @@
 package id.ac.ui.cs.advprog.mysawit.garden.service;
 
-import id.ac.ui.cs.advprog.mysawit.garden.model.Kebun;
-import id.ac.ui.cs.advprog.mysawit.garden.repository.KebunRepository;
-import org.springframework.stereotype.Service;
+import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunCreateRequest;
+import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunResponse;
+import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunUpdateRequest;
 
 import java.util.List;
+import java.util.UUID;
 
-@Service
-public class KebunService {
+public interface KebunService {
 
-    private final KebunRepository kebunRepository;
+    KebunDetailResponse createKebun(KebunCreateRequest request);
 
-    public KebunService(KebunRepository kebunRepository) {
-        this.kebunRepository = kebunRepository;
-    }
+    List<KebunResponse> getAllKebun(String nama, String kode);
 
-    public Kebun createKebun(Kebun kebun) {
+    KebunDetailResponse getKebunById(UUID id);
 
-        if (kebunRepository.existsByKodeUnik(kebun.getKodeUnik())) {
-            throw new RuntimeException("Kode kebun sudah digunakan!");
-        }
+    KebunDetailResponse updateKebun(UUID id, KebunUpdateRequest request);
 
-        if (kebun.getLuas() <= 0) {
-            throw new RuntimeException("Luas harus lebih dari 0!");
-        }
-
-        return kebunRepository.save(kebun);
-    }
-
-    public List<Kebun> getAllKebun() {
-        return kebunRepository.findAll();
-    }
+    void deleteKebun(UUID id);
 }
