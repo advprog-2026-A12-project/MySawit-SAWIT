@@ -28,6 +28,11 @@ public class JwtFilter implements Filter {
       HttpServletRequest request = (HttpServletRequest) req;
       HttpServletResponse response = (HttpServletResponse) res;
 
+      if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+         response.setStatus(HttpServletResponse.SC_OK);
+         return;
+      }
+
       if (!request.getRequestURI().startsWith("/api")) {
          chain.doFilter(request, response);
          return;
