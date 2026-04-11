@@ -21,11 +21,11 @@ CREATE TABLE IF NOT EXISTS kebun (
                        updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX idx_kebun_kode ON kebun(kode);
+CREATE UNIQUE INDEX IF NOT EXISTS  idx_kebun_kode ON kebun(kode);
 
-CREATE INDEX idx_kebun_nama ON kebun(nama);
+CREATE INDEX IF NOT EXISTS  idx_kebun_nama ON kebun(nama);
 
-CREATE INDEX idx_kebun_geom
+CREATE INDEX IF NOT EXISTS idx_kebun_geom
     ON kebun
         USING GIST (geom);
 
@@ -44,10 +44,10 @@ CREATE TABLE IF NOT EXISTS kebun_supir (
                              updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX idx_ks_supir_active
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ks_supir_active
     ON kebun_supir(supir_id)
     WHERE is_active = TRUE;
 
-CREATE INDEX idx_ks_kebun_active
+CREATE INDEX IF NOT EXISTS idx_ks_kebun_active
     ON kebun_supir(kebun_id)
     WHERE is_active = TRUE;
