@@ -28,7 +28,8 @@ public class JwtFilter implements Filter {
       HttpServletRequest request = (HttpServletRequest) req;
       HttpServletResponse response = (HttpServletResponse) res;
 
-      if (!request.getRequestURI().startsWith("/api")) {
+      // JWT untuk bagian delivery endpoints saja.
+      if (!request.getRequestURI().startsWith("/api/deliveries")) {
          chain.doFilter(request, response);
          return;
       }
