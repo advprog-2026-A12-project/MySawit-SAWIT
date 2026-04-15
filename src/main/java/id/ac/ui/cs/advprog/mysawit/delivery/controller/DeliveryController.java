@@ -3,7 +3,6 @@ package id.ac.ui.cs.advprog.mysawit.delivery.controller;
 import id.ac.ui.cs.advprog.mysawit.delivery.dto.CreateDeliveryRequest;
 import id.ac.ui.cs.advprog.mysawit.delivery.model.Delivery;
 import id.ac.ui.cs.advprog.mysawit.delivery.service.DeliveryService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,80 +24,78 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeliveryController {
 
-   private final DeliveryService deliveryService;
+    private final DeliveryService deliveryService;
 
-   @PostMapping
-   public ResponseEntity<?> createDelivery(@RequestBody CreateDeliveryRequest request, HttpServletRequest req) {
-      String role = (String) req.getAttribute("userRole");
-      if (!"MANDOR".equals(role)) {
-         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Akses ditolak. Hanya untuk Mandor");
-      }
+    @PostMapping
+    public ResponseEntity<?> createDelivery(
+            @RequestBody CreateDeliveryRequest request,
+            @RequestHeader("X-User-Role") String role,
+            @RequestHeader("X-User-Id") UUID userId,
+            @RequestHeader(value = "X-User-Name", required = false) String userName) {
 
-      UUID mandorId = (UUID) req.getAttribute("userId");
-      String mandorName = (String) req.getAttribute("userName");
+        if (!"MANDOR".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+        }
 
-      Delivery created = deliveryService.createDelivery(request, mandorId, mandorName);
-      return ResponseEntity.status(HttpStatus.CREATED).body(created);
-   }
+        Delivery created = deliveryService.createDelivery(request, userId, userName != null ? userName : "Mandor");
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
 
-   @GetMapping
-   public ResponseEntity<?> getDeliveries(HttpServletRequest req) {
-      String role = (String) req.getAttribute("userRole");
-      UUID userId = (UUID) req.getAttribute("userId");
+    @GetMapping
+    public ResponseEntity<?> getDeliveries(
+            @RequestHeader(value = "X-User-Role", required = false) String role,
+            @RequestHeader(value = "X-User-Id", required = false) UUID userId) {
 
-      if (role == null) {
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token tidak valid atau tidak ada.");
-      }
+        if (role == null || userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
 
-      List<Delivery> deliveries = deliveryService.getDeliveriesByRole(userId, role);
-      return ResponseEntity.ok(deliveries);
-   }
+        List<Delivery> deliveries = deliveryService.getDeliveriesByRole(userId, role);
+        return ResponseEntity.ok(deliveries);
+    }
 
-   @PatchMapping("/{id}/status")
-   public ResponseEntity<?> updateStatus(
-           @PathVariable UUID id,
-           @RequestParam String status,
-           HttpServletRequest req) {
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable UUID id,
+            @RequestParam String status,
+            @RequestHeader("X-User-Role") String role) {
 
-      String role = (String) req.getAttribute("userRole");
-      if (!"SUPIR_TRUK".equals(role)) {
-         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Akses ditolak. Hanya untuk supir");
-      }
+        if (!"SUPIR_TRUK".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+        }
 
-      Delivery updated = deliveryService.updateStatus(id, status);
-      return ResponseEntity.ok(updated);
-   }
+        Delivery updated = deliveryService.updateStatus(id, status);
+        return ResponseEntity.ok(updated);
+    }
 
-   @PatchMapping("/{id}/mandor-approval")
-   public ResponseEntity<?> approveByMandor(
-           @PathVariable UUID id,
-           @RequestParam boolean isApproved,
-           @RequestParam(required = false) String rejectionReason,
-           HttpServletRequest req) {
+    @PatchMapping("/{id}/mandor-approval")
+    public ResponseEntity<?> approveByMandor(
+            @PathVariable UUID id,
+            @RequestParam boolean isApproved,
+            @RequestParam(required = false) String rejectionReason,
+            @RequestHeader("X-User-Role") String role) {
 
-      String role = (String) req.getAttribute("userRole");
-      if (!"MANDOR".equals(role)) {
-         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Akses ditolak. Membutuhkan role MANDOR.");
-      }
+        if (!"MANDOR".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+        }
 
-      Delivery updated = deliveryService.mandorApprove(id, isApproved, rejectionReason);
-      return ResponseEntity.ok(updated);
-   }
+        Delivery updated = deliveryService.mandorApprove(id, isApproved, rejectionReason);
+        return ResponseEntity.ok(updated);
+    }
 
-   @PatchMapping("/{id}/admin-approval")
-   public ResponseEntity<?> approveByAdmin(
-           @PathVariable UUID id,
-           @RequestParam boolean isApproved,
-           @RequestParam(required = false) Double approvedPayloadKg,
-           @RequestParam(required = false) String rejectionReason,
-           HttpServletRequest req) {
+    @PatchMapping("/{id}/admin-approval")
+    public ResponseEntity<?> approveByAdmin(
+            @PathVariable UUID id,
+            @RequestParam boolean isApproved,
+            @RequestParam(required = false) Double approvedPayloadKg,
+            @RequestParam(required = false) String rejectionReason,
+            @RequestHeader("X-User-Role") String role) {
 
-      String role = (String) req.getAttribute("userRole");
-      if (!"ADMIN".equals(role)) {
-         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Akses ditolak. Membutuhkan role ADMIN.");
-      }
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+        }
 
-      Delivery updated = deliveryService.adminApprove(id, isApproved, approvedPayloadKg, rejectionReason);
-      return ResponseEntity.ok(updated);
-   }
+        Delivery updated = deliveryService.adminApprove(id, isApproved, approvedPayloadKg, rejectionReason);
+        return ResponseEntity.ok(updated);
+    }
 }

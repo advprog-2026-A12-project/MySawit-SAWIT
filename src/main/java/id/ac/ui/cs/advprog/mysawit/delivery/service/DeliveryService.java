@@ -7,13 +7,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface DeliveryService {
-   Delivery createDelivery(CreateDeliveryRequest request, UUID mandorId, String mandorName);
-
-   List<Delivery> getDeliveriesByRole(UUID userId, String role);
-
-   Delivery updateStatus(UUID id, String status);
-
-   Delivery mandorApprove(UUID id, boolean isApproved, String rejectionReason);
-
-   Delivery adminApprove(UUID id, boolean isApproved, Double approvedPayloadKg, String rejectionReason);
+    Delivery createDelivery(CreateDeliveryRequest request, UUID mandorId, String mandorName);
+    List<Delivery> getDeliveriesByRole(UUID userId, String role);
+    Delivery updateStatus(UUID id, String status);
+    Delivery mandorApprove(UUID id, boolean isApproved, String rejectionReason);
+    Delivery adminApprove(UUID id, boolean isApproved, Double approvedPayloadKg, String rejectionReason);
 }
