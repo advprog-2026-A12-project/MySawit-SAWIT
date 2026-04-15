@@ -32,6 +32,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         if (request.getRequestURI().equals("/api/harvest/health")) {
             chain.doFilter(request, response);
             return;
