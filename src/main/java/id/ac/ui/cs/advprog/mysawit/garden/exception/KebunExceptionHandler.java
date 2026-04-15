@@ -29,6 +29,26 @@ public class KebunExceptionHandler {
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
+    @ExceptionHandler(KebunOverlapException.class)
+    public ResponseEntity<Map<String, Object>> handleOverlap(KebunOverlapException ex) {
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidKebunPolygonException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPolygon(InvalidKebunPolygonException ex) {
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler(MandorAlreadyAssignedException.class)
+    public ResponseEntity<Map<String, Object>> handleMandorAlreadyAssigned(MandorAlreadyAssignedException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(SupirAlreadyAssignedException.class)
+    public ResponseEntity<Map<String, Object>> handleSupirAlreadyAssigned(SupirAlreadyAssignedException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         List<Map<String, String>> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
