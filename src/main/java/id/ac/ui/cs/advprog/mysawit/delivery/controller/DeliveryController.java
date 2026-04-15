@@ -35,7 +35,8 @@ public class DeliveryController {
             @RequestHeader(value = "X-User-Name", required = false) String userName) {
 
         if (!"MANDOR".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden: hanya Mandor yang bisa membuat pengiriman");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Forbidden: hanya Mandor yang bisa membuat pengiriman");
         }
 
         try {
@@ -70,7 +71,8 @@ public class DeliveryController {
             @RequestHeader("X-User-Id") UUID userId) {
 
         if (!"SUPIR_TRUK".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden: hanya Supir Truk yang bisa melihat daftar tugasnya");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Forbidden: hanya Supir Truk yang bisa melihat daftar tugasnya");
         }
 
         List<Delivery> tasks = deliveryService.getDeliveriesBySupirId(userId);
@@ -83,7 +85,8 @@ public class DeliveryController {
             @RequestHeader("X-User-Role") String role) {
 
         if (!"SUPIR_TRUK".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden: hanya Supir Truk yang bisa mengubah status");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Forbidden: hanya Supir Truk yang bisa mengubah status");
         }
 
         try {
