@@ -14,4 +14,6 @@ public interface DeliveryRepository extends JpaRepository<Delivery, UUID> {
    List<Delivery> findByMandorId(UUID mandorId);
 
    List<Delivery> findByStatus(String status);
+
+   List<Delivery> findByMandorIdAndSupirNameContainingIgnoreCase(UUID mandorId, String supirName);
 }
