@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.mysawit.delivery.controller;
 import id.ac.ui.cs.advprog.mysawit.delivery.dto.CreateDeliveryRequest;
 import id.ac.ui.cs.advprog.mysawit.delivery.model.Delivery;
 import id.ac.ui.cs.advprog.mysawit.delivery.service.DeliveryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,44 +29,71 @@ public class DeliveryController {
 
     @PostMapping
     public ResponseEntity<?> createDelivery(
-            @RequestBody CreateDeliveryRequest request,
+            @Valid @RequestBody CreateDeliveryRequest request,
             @RequestHeader("X-User-Role") String role,
             @RequestHeader("X-User-Id") UUID userId,
             @RequestHeader(value = "X-User-Name", required = false) String userName) {
 
         if (!"MANDOR".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden: hanya Mandor yang bisa membuat pengiriman");
         }
 
-        Delivery created = deliveryService.createDelivery(request, userId, userName != null ? userName : "Mandor");
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        try {
+            Delivery created = deliveryService.createDelivery(request, userId, userName != null ? userName : "Mandor");
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @GetMapping
     public ResponseEntity<?> getDeliveries(
             @RequestHeader(value = "X-User-Role", required = false) String role,
-            @RequestHeader(value = "X-User-Id", required = false) UUID userId) {
+            @RequestHeader(value = "X-User-Id", required = false) UUID userId,
+            @RequestParam(required = false) String supirName) {
 
         if (role == null || userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        if ("MANDOR".equals(role) && supirName != null) {
+            return ResponseEntity.ok(deliveryService.getDeliveriesByMandorFiltered(userId, supirName));
         }
 
         List<Delivery> deliveries = deliveryService.getDeliveriesByRole(userId, role);
         return ResponseEntity.ok(deliveries);
     }
 
+    @GetMapping("/supir-tasks")
+    public ResponseEntity<?> getSupirTasks(
+            @RequestHeader("X-User-Role") String role,
+            @RequestHeader("X-User-Id") UUID userId) {
+
+        if (!"SUPIR_TRUK".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden: hanya Supir Truk yang bisa melihat daftar tugasnya");
+        }
+
+        List<Delivery> tasks = deliveryService.getDeliveriesBySupirId(userId);
+        return ResponseEntity.ok(tasks);
+    }
+
     @PatchMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(
+    public ResponseEntity<?> advanceStatus(
             @PathVariable UUID id,
-            @RequestParam String status,
             @RequestHeader("X-User-Role") String role) {
 
         if (!"SUPIR_TRUK".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden: hanya Supir Truk yang bisa mengubah status");
         }
 
-        Delivery updated = deliveryService.updateStatus(id, status);
-        return ResponseEntity.ok(updated);
+        try {
+            Delivery updated = deliveryService.advanceStatus(id);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PatchMapping("/{id}/mandor-approval")
