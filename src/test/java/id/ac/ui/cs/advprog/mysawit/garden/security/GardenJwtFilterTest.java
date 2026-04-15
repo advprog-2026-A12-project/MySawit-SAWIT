@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.mysawit.garden.security;
 
-import id.ac.ui.cs.advprog.mysawit.delivery.security.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;

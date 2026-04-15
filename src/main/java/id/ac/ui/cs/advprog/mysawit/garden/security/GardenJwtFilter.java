@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.mysawit.garden.security;
 
-import id.ac.ui.cs.advprog.mysawit.delivery.security.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -12,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,7 @@ public class GardenJwtFilter implements Filter {
    private final boolean authEnabled;
 
    public GardenJwtFilter(
-           JwtUtil jwtUtil,
+         @Qualifier("gardenJwtUtil") JwtUtil jwtUtil,
            @Value("${garden.auth.enabled:true}") boolean authEnabled) {
       this.jwtUtil = jwtUtil;
       this.authEnabled = authEnabled;
