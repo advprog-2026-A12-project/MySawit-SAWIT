@@ -1,21 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.harvest.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,10 +9,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "harvests")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
 public class Harvest {
 
@@ -36,6 +20,9 @@ public class Harvest {
 
     @Column(name = "buruh_id", nullable = false)
     private UUID buruhId;
+
+    @Column(name = "mandor_id", nullable = false)
+    private UUID mandorId;
 
     @Column(nullable = false)
     private LocalDate harvestDate;
@@ -50,6 +37,13 @@ public class Harvest {
     private HarvestStatus status;
 
     private String rejectionReason;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean bisaDiangkutTruk = false;
+
+    @Column(name = "actioned_by_mandor_id")
+    private UUID actionedByMandorId;
 
     @OneToMany(
             mappedBy = "harvest",
