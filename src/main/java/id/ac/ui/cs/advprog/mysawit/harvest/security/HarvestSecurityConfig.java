@@ -44,7 +44,7 @@ public class HarvestSecurityConfig {
     }
 
     // 3. Konfigurasi global CORS untuk mengizinkan origin dari frontend Next.js
-    @Bean
+    @Bean(name = "harvestCorsConfigurationSource")
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
