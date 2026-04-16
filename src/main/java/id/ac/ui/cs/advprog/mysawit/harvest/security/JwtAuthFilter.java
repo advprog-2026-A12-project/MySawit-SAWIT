@@ -56,12 +56,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        if (!jwtUtil.isValid(token)) {
-            sendUnauthorized(response, "Token tidak valid atau sudah expired");
-            return;
-        }
-
         try {
+            // Langsung parse tokennya. Kalau gagal, akan langsung dilempar ke blok catch di bawah
             Claims claims = jwtUtil.parseToken(token);
 
             UUID userId = jwtUtil.getUserId(claims);
@@ -80,7 +76,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
 
         } catch (Exception e) {
-            sendUnauthorized(response, "Token error: " + e.getMessage());
+            //  Mengirimkan tipe error dan pesan aslinya ke frontend
+            sendUnauthorized(response, "Token error (" + e.getClass().getSimpleName() + "): " + e.getMessage());
         }
     }
 
