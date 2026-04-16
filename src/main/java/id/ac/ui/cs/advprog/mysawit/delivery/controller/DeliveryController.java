@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,9 +31,9 @@ public class DeliveryController {
     @PostMapping
     public ResponseEntity<?> createDelivery(
             @Valid @RequestBody CreateDeliveryRequest request,
-            @RequestHeader("X-User-Role") String role,
-            @RequestHeader("X-User-Id") UUID userId,
-            @RequestHeader(value = "X-User-Name", required = false) String userName) {
+            @RequestAttribute("role") String role,
+            @RequestAttribute("userId") UUID userId,
+            @RequestAttribute(value = "userName", required = false) String userName) {
 
         if (!"MANDOR".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -49,8 +50,8 @@ public class DeliveryController {
 
     @GetMapping
     public ResponseEntity<?> getDeliveries(
-            @RequestHeader(value = "X-User-Role", required = false) String role,
-            @RequestHeader(value = "X-User-Id", required = false) UUID userId,
+            @RequestAttribute(value = "role", required = false) String role,
+            @RequestAttribute(value = "userId", required = false) UUID userId,
             @RequestParam(required = false) String supirName) {
 
         if (role == null || userId == null) {
@@ -67,8 +68,8 @@ public class DeliveryController {
 
     @GetMapping("/supir-tasks")
     public ResponseEntity<?> getSupirTasks(
-            @RequestHeader("X-User-Role") String role,
-            @RequestHeader("X-User-Id") UUID userId) {
+            @RequestAttribute("role") String role,
+            @RequestAttribute("userId") UUID userId) {
 
         if (!"SUPIR_TRUK".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -82,7 +83,7 @@ public class DeliveryController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> advanceStatus(
             @PathVariable UUID id,
-            @RequestHeader("X-User-Role") String role) {
+            @RequestAttribute("role") String role) {
 
         if (!"SUPIR_TRUK".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -104,7 +105,7 @@ public class DeliveryController {
             @PathVariable UUID id,
             @RequestParam boolean isApproved,
             @RequestParam(required = false) String rejectionReason,
-            @RequestHeader("X-User-Role") String role) {
+            @RequestAttribute("role") String role) {
 
         if (!"MANDOR".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
@@ -120,7 +121,7 @@ public class DeliveryController {
             @RequestParam boolean isApproved,
             @RequestParam(required = false) Double approvedPayloadKg,
             @RequestParam(required = false) String rejectionReason,
-            @RequestHeader("X-User-Role") String role) {
+            @RequestAttribute("role") String role) {
 
         if (!"ADMIN".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
