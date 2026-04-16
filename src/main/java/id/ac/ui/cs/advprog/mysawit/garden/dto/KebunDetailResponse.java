@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -30,6 +31,7 @@ public class KebunDetailResponse {
     private Double coord4Lat;
     private Double coord4Lng;
     private UUID mandorId;
+    private List<UUID> supirIds;
 
     @JsonProperty("isActive")
     private Boolean isActive;

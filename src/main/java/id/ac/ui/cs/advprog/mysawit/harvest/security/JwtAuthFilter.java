@@ -21,9 +21,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    // Pakai @Qualifier supaya Spring tahu ambil bean "harvestJwtUtil"
     public JwtAuthFilter(@Qualifier("harvestJwtUtil") JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !request.getRequestURI().startsWith("/api/harvest");
     }
 
     @Override
@@ -31,6 +35,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain)
             throws ServletException, IOException {
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         if (request.getRequestURI().equals("/api/harvest/health")) {
             chain.doFilter(request, response);
@@ -46,12 +55,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        if (!jwtUtil.isValid(token)) {
-            sendUnauthorized(response, "Token tidak valid atau sudah expired");
-            return;
-        }
-
         try {
+            // Langsung parse tokennya. Kalau gagal, akan langsung dilempar ke blok catch di bawah
             Claims claims = jwtUtil.parseToken(token);
 
             UUID userId = jwtUtil.getUserId(claims);
@@ -70,7 +75,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
 
         } catch (Exception e) {
-            sendUnauthorized(response, "Token error: " + e.getMessage());
+            //  Mengirimkan tipe error dan pesan aslinya ke frontend
+            sendUnauthorized(response, "Token error (" + e.getClass().getSimpleName() + "): " + e.getMessage());
         }
     }
 

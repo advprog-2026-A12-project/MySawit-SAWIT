@@ -1,8 +1,11 @@
 package id.ac.ui.cs.advprog.mysawit.garden.controller;
 
+import id.ac.ui.cs.advprog.mysawit.garden.dto.AssignMandorRequest;
+import id.ac.ui.cs.advprog.mysawit.garden.dto.AssignSupirRequest;
 import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunCreateRequest;
 import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunResponse;
+import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunSupirAssignmentResponse;
 import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunUpdateRequest;
 import id.ac.ui.cs.advprog.mysawit.garden.service.KebunService;
 import jakarta.validation.Valid;
@@ -58,6 +61,22 @@ public class KebunController {
             @Valid @RequestBody KebunUpdateRequest request) {
         KebunDetailResponse response = kebunService.updateKebun(id, request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/assign-mandor")
+    public ResponseEntity<KebunDetailResponse> assignMandor(
+            @PathVariable UUID id,
+            @Valid @RequestBody AssignMandorRequest request) {
+        KebunDetailResponse response = kebunService.assignMandor(id, request.getMandorId());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/assign-supir")
+    public ResponseEntity<KebunSupirAssignmentResponse> assignSupir(
+            @PathVariable UUID id,
+            @Valid @RequestBody AssignSupirRequest request) {
+        KebunSupirAssignmentResponse response = kebunService.assignSupir(id, request.getSupirId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("/{id}")
