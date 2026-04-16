@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.mysawit.garden.service;
 import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunCreateRequest;
 import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunResponse;
+import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunSupirAssignmentResponse;
 import id.ac.ui.cs.advprog.mysawit.garden.dto.KebunUpdateRequest;
 
 import java.util.List;
@@ -17,6 +18,10 @@ public interface KebunService {
     KebunDetailResponse getKebunById(UUID id);
 
     KebunDetailResponse updateKebun(UUID id, KebunUpdateRequest request);
+
+    KebunDetailResponse assignMandor(UUID kebunId, UUID mandorId);
+
+    KebunSupirAssignmentResponse assignSupir(UUID kebunId, UUID supirId);
 
     void deleteKebun(UUID id);
 }

@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.delivery.security;
+package id.ac.ui.cs.advprog.mysawit.garden.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("gardenJwtUtil")
 public class JwtUtil {
 
    private final SecretKey signingKey;

@@ -1,25 +1,32 @@
-package id.ac.ui.cs.advprog.mysawit.delivery.security;
+package id.ac.ui.cs.advprog.mysawit.garden.security;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(1)
-public class JwtFilter implements Filter {
+@Order(2)
+public class GardenJwtFilter implements Filter {
 
    private final JwtUtil jwtUtil;
+   private final boolean authEnabled;
 
-   public JwtFilter(JwtUtil jwtUtil) {
+   public GardenJwtFilter(
+         @Qualifier("gardenJwtUtil") JwtUtil jwtUtil,
+           @Value("${garden.auth.enabled:true}") boolean authEnabled) {
       this.jwtUtil = jwtUtil;
+      this.authEnabled = authEnabled;
    }
 
    @Override
@@ -28,7 +35,12 @@ public class JwtFilter implements Filter {
       HttpServletRequest request = (HttpServletRequest) req;
       HttpServletResponse response = (HttpServletResponse) res;
 
-      if (!request.getRequestURI().startsWith("/api")) {
+      if (!authEnabled) {
+         chain.doFilter(request, response);
+         return;
+      }
+
+      if (!request.getRequestURI().startsWith("/api/kebun")) {
          chain.doFilter(request, response);
          return;
       }
@@ -36,7 +48,7 @@ public class JwtFilter implements Filter {
       String authHeader = request.getHeader("Authorization");
 
       if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-         response.setStatus(401);
+         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
          response.setContentType("application/json");
          response.getWriter().write("{\"error\":\"Missing or invalid Authorization header\"}");
          return;
@@ -45,14 +57,23 @@ public class JwtFilter implements Filter {
       String token = authHeader.substring(7);
 
       if (!jwtUtil.isValid(token)) {
-         response.setStatus(401);
+         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
          response.setContentType("application/json");
          response.getWriter().write("{\"error\":\"Invalid or expired token\"}");
          return;
       }
 
       Claims claims = jwtUtil.extractClaims(token);
-      request.setAttribute("userId", claims.getSubject());
+
+      try {
+         request.setAttribute("userId", UUID.fromString(claims.getSubject()));
+      } catch (IllegalArgumentException ex) {
+         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+         response.setContentType("application/json");
+         response.getWriter().write("{\"error\":\"Invalid user id in token\"}");
+         return;
+      }
+
       request.setAttribute("userRole", claims.get("role", String.class));
       request.setAttribute("userName", claims.get("name", String.class));
 

@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface DeliveryRepository extends JpaRepository<Delivery, String> {
+public interface DeliveryRepository extends JpaRepository<Delivery, UUID> {
    List<Delivery> findBySupirId(UUID supirId);
+
    List<Delivery> findByMandorId(UUID mandorId);
+
    List<Delivery> findByStatus(String status);
+
+   List<Delivery> findByMandorIdAndSupirNameContainingIgnoreCase(UUID mandorId, String supirName);
 }

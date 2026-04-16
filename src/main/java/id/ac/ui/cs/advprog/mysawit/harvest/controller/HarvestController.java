@@ -1,23 +1,38 @@
 package id.ac.ui.cs.advprog.mysawit.harvest.controller;
 
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.*;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.ApproveRejectRequest;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestRequest;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestResponse;
 import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
 import id.ac.ui.cs.advprog.mysawit.harvest.service.HarvestService;
 import id.ac.ui.cs.advprog.mysawit.harvest.service.HarvestServiceImpl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -60,7 +75,9 @@ public class HarvestController {
             @Valid @RequestBody HarvestRequest body
     ) {
         String role = getRole(request);
-        if (!"BURUH".equals(role)) return forbiddenRole("BURUH", role);
+        if (!"BURUH".equals(role)) {
+            return forbiddenRole("BURUH", role);
+        }
 
         UUID buruhId  = getUserId(request);
         UUID mandorId = getMandorId(request); // dari JWT payload Buruh
@@ -82,7 +99,9 @@ public class HarvestController {
             @RequestPart(required = false) List<MultipartFile> photos
     ) {
         String role = getRole(request);
-        if (!"BURUH".equals(role)) return forbiddenRole("BURUH", role);
+        if (!"BURUH".equals(role)) {
+            return forbiddenRole("BURUH", role);
+        }
 
         UUID buruhId  = getUserId(request);
         UUID mandorId = getMandorId(request);
@@ -113,7 +132,9 @@ public class HarvestController {
             @RequestParam(required = false) HarvestStatus status
     ) {
         String role = getRole(request);
-        if (!"BURUH".equals(role)) return forbiddenRole("BURUH", role);
+        if (!"BURUH".equals(role)) {
+            return forbiddenRole("BURUH", role);
+        }
 
         UUID buruhId = getUserId(request);
 
@@ -136,7 +157,9 @@ public class HarvestController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalPanen
     ) {
         String role = getRole(request);
-        if (!"MANDOR".equals(role)) return forbiddenRole("MANDOR", role);
+        if (!"MANDOR".equals(role)) {
+            return forbiddenRole("MANDOR", role);
+        }
 
         UUID mandorId = getUserId(request); // Mandor = subject token
 
@@ -155,7 +178,9 @@ public class HarvestController {
             HttpServletRequest request
     ) {
         String role = getRole(request);
-        if (!"MANDOR".equals(role)) return forbiddenRole("MANDOR", role);
+        if (!"MANDOR".equals(role)) {
+            return forbiddenRole("MANDOR", role);
+        }
 
         UUID mandorId = getUserId(request);
 
@@ -174,7 +199,9 @@ public class HarvestController {
             @RequestBody ApproveRejectRequest body
     ) {
         String role = getRole(request);
-        if (!"MANDOR".equals(role)) return forbiddenRole("MANDOR", role);
+        if (!"MANDOR".equals(role)) {
+            return forbiddenRole("MANDOR", role);
+        }
 
         UUID mandorId = getUserId(request);
 
