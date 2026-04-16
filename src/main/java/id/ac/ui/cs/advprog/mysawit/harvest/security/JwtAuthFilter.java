@@ -61,27 +61,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             UUID userId = jwtUtil.getUserId(claims);
             String role = jwtUtil.getRole(claims);
 
-            // set basic identity
             request.setAttribute("userId", userId);
             request.setAttribute("role", role);
 
-            //  OPTIONAL: ambil mandorId kalau ada (tidak wajib)
-            Object mandorClaim = claims.get("mandorId");
-            if (mandorClaim != null) {
-                try {
-                    UUID mandorId = UUID.fromString(mandorClaim.toString());
-                    request.setAttribute("mandorId", mandorId);
-                } catch (Exception ignored) {
-                    // jangan crash kalau format salah
-                }
-            }
-
-            var auth = new UsernamePasswordAuthenticationToken(
-                    userId.toString(),
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+            SecurityContextHolder.getContext().setAuthentication(
+                    new UsernamePasswordAuthenticationToken(
+                            userId.toString(),
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    )
             );
-            SecurityContextHolder.getContext().setAuthentication(auth);
 
             chain.doFilter(request, response);
 
