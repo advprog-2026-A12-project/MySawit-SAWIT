@@ -21,7 +21,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    // Pakai @Qualifier supaya Spring tahu ambil bean "harvestJwtUtil"
     public JwtAuthFilter(@Qualifier("harvestJwtUtil") JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
