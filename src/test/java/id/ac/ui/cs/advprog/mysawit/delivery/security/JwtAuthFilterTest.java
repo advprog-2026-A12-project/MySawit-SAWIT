@@ -8,7 +8,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -58,7 +57,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_noAuthHeader_shouldPassThroughWithoutAuth() throws Exception {
+    void doFilterInternalNoAuthHeaderShouldPassThroughWithoutAuth() throws Exception {
         when(request.getHeader("Authorization")).thenReturn(null);
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
@@ -69,7 +68,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_authHeaderNotBearer_shouldPassThroughWithoutAuth() throws Exception {
+    void doFilterInternalAuthHeaderNotBearerShouldPassThroughWithoutAuth() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Basic dXNlcjpwYXNz");
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
@@ -80,7 +79,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_invalidToken_shouldReturn401() throws Exception {
+    void doFilterInternalInvalidTokenShouldReturn401() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Bearer invalid.token.here");
         when(jwtUtil.isValid("invalid.token.here")).thenReturn(false);
         when(response.getWriter()).thenReturn(new PrintWriter(responseWriter));
@@ -94,7 +93,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_validToken_shouldSetAttributesAndAuthenticate() throws Exception {
+    void doFilterInternalValidTokenShouldSetAttributesAndAuthenticate() throws Exception {
         UUID userId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         String token = "valid.jwt.token";
         Claims claims = mock(Claims.class);
@@ -107,19 +106,16 @@ class JwtAuthFilterTest {
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
 
-        ArgumentCaptor<String> attrNameCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Object> attrValueCaptor = ArgumentCaptor.forClass(Object.class);
         verify(request).setAttribute(eq("userId"), eq(userId));
         verify(request).setAttribute(eq("role"), eq("MANDOR"));
         verify(filterChain).doFilter(request, response);
-
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
         assertThat(SecurityContextHolder.getContext().getAuthentication().getName())
                 .isEqualTo(userId.toString());
     }
 
     @Test
-    void doFilterInternal_validToken_authShouldContainCorrectRole() throws Exception {
+    void doFilterInternalValidTokenAuthShouldContainCorrectRole() throws Exception {
         UUID userId = UUID.fromString("22222222-2222-2222-2222-222222222222");
         String token = "supir.jwt.token";
         Claims claims = mock(Claims.class);
@@ -139,7 +135,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_parseTokenThrowsException_shouldReturn401WithErrorMessage() throws Exception {
+    void doFilterInternalParseTokenThrowsExceptionShouldReturn401WithErrorMessage() throws Exception {
         String token = "malformed.jwt.token";
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
@@ -157,7 +153,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_unauthorizedResponse_shouldWriteJsonBody() throws Exception {
+    void doFilterInternalUnauthorizedResponseShouldWriteJsonBody() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Bearer bad.token");
         when(jwtUtil.isValid("bad.token")).thenReturn(false);
         when(response.getWriter()).thenReturn(new PrintWriter(responseWriter));

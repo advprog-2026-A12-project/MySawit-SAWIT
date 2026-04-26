@@ -22,35 +22,33 @@ class TibaDiTujuanStateTest {
     }
 
     @Test
-    void getStatusName_shouldReturnTibaDiTujuan() {
+    void getStatusNameShouldReturnTibaDiTujuan() {
         assertThat(state.getStatusName()).isEqualTo("TIBA_DI_TUJUAN");
     }
 
     @Test
-    void advanceStatus_shouldThrowIllegalStateException() {
+    void advanceStatusShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.advanceStatus(delivery))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("tiba di tujuan");
     }
 
     @Test
-    void mandorApprove_approved_shouldTransitionToDiSetujuiMandor() {
+    void mandorApproveApprovedShouldTransitionToDisetujuiMandor() {
         state.mandorApprove(delivery, true, null);
-
         assertThat(delivery.getStatus()).isEqualTo("DISETUJUI_MANDOR");
         assertThat(delivery.getRejectionReason()).isNull();
     }
 
     @Test
-    void mandorApprove_rejected_shouldTransitionToDitolakMandor() {
+    void mandorApproveRejectedShouldTransitionToDitolakMandor() {
         state.mandorApprove(delivery, false, "Barang rusak");
-
         assertThat(delivery.getStatus()).isEqualTo("DITOLAK_MANDOR");
         assertThat(delivery.getRejectionReason()).isEqualTo("Barang rusak");
     }
 
     @Test
-    void adminApprove_shouldThrowIllegalStateException() {
+    void adminApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.adminApprove(delivery, true, 200.0, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("TIBA_DI_TUJUAN");

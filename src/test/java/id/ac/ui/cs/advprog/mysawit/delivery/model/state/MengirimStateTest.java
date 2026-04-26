@@ -22,27 +22,26 @@ class MengirimStateTest {
     }
 
     @Test
-    void getStatusName_shouldReturnMengirim() {
+    void getStatusNameShouldReturnMengirim() {
         assertThat(state.getStatusName()).isEqualTo("MENGIRIM");
     }
 
     @Test
-    void advanceStatus_shouldTransitionToTibaDiTujuan() {
+    void advanceStatusShouldTransitionToTibaDiTujuan() {
         state.advanceStatus(delivery);
-
         assertThat(delivery.getStatus()).isEqualTo("TIBA_DI_TUJUAN");
         assertThat(delivery.getArrivedAt()).isNotNull();
     }
 
     @Test
-    void mandorApprove_shouldThrowIllegalStateException() {
+    void mandorApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.mandorApprove(delivery, true, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("MENGIRIM");
     }
 
     @Test
-    void adminApprove_shouldThrowIllegalStateException() {
+    void adminApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.adminApprove(delivery, true, 200.0, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("MENGIRIM");

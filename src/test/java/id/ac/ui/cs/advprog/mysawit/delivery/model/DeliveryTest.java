@@ -21,13 +21,13 @@ class DeliveryTest {
     }
 
     @Test
-    void defaultStatus_shouldBeMemuat() {
+    void defaultStatusShouldBeMemuat() {
         Delivery delivery = buildDefault();
         assertThat(delivery.getStatus()).isEqualTo("MEMUAT");
     }
 
     @Test
-    void builder_shouldSetAllFields() {
+    void builderShouldSetAllFields() {
         UUID supirId = UUID.randomUUID();
         UUID mandorId = UUID.randomUUID();
         UUID harvestId = UUID.randomUUID();
@@ -56,7 +56,7 @@ class DeliveryTest {
     }
 
     @Test
-    void setter_shouldUpdateFields() {
+    void setterShouldUpdateFields() {
         Delivery delivery = buildDefault();
 
         delivery.setStatus("TIBA_DI_TUJUAN");
@@ -75,7 +75,7 @@ class DeliveryTest {
     }
 
     @Test
-    void noArgsConstructor_shouldWork() {
+    void noArgsConstructorShouldWork() {
         Delivery delivery = new Delivery();
         assertThat(delivery).isNotNull();
         assertThat(delivery.getId()).isNull();

@@ -8,56 +8,56 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class DeliveryStateFactoryTest {
 
     @Test
-    void getState_memuat_shouldReturnMuatState() {
+    void getStateMuatShouldReturnMuatState() {
         DeliveryState state = DeliveryStateFactory.getState("MEMUAT");
         assertThat(state).isInstanceOf(MuatState.class);
     }
 
     @Test
-    void getState_mengirim_shouldReturnMengirimState() {
+    void getStateMengirimShouldReturnMengirimState() {
         DeliveryState state = DeliveryStateFactory.getState("MENGIRIM");
         assertThat(state).isInstanceOf(MengirimState.class);
     }
 
     @Test
-    void getState_tibaDiTujuan_shouldReturnTibaDiTujuanState() {
+    void getStateTibaDiTujuanShouldReturnTibaDiTujuanState() {
         DeliveryState state = DeliveryStateFactory.getState("TIBA_DI_TUJUAN");
         assertThat(state).isInstanceOf(TibaDiTujuanState.class);
     }
 
     @Test
-    void getState_disetujuiMandor_shouldReturnDisetujuiMandorState() {
+    void getStateDisetujuiMandorShouldReturnDisetujuiMandorState() {
         DeliveryState state = DeliveryStateFactory.getState("DISETUJUI_MANDOR");
         assertThat(state).isInstanceOf(DisetujuiMandorState.class);
     }
 
     @Test
-    void getState_ditolakMandor_shouldReturnDitolakMandorState() {
+    void getStateDitolakMandorShouldReturnDitolakMandorState() {
         DeliveryState state = DeliveryStateFactory.getState("DITOLAK_MANDOR");
         assertThat(state).isInstanceOf(DitolakMandorState.class);
     }
 
     @Test
-    void getState_selesai_shouldReturnSelesaiState() {
+    void getStateSelesaiShouldReturnSelesaiState() {
         DeliveryState state = DeliveryStateFactory.getState("SELESAI");
         assertThat(state).isInstanceOf(SelesaiState.class);
     }
 
     @Test
-    void getState_ditolakAdmin_shouldReturnDitolakAdminState() {
+    void getStateDitolakAdminShouldReturnDitolakAdminState() {
         DeliveryState state = DeliveryStateFactory.getState("DITOLAK_ADMIN");
         assertThat(state).isInstanceOf(DitolakAdminState.class);
     }
 
     @Test
-    void getState_unknown_shouldThrowIllegalArgumentException() {
+    void getStateUnknownShouldThrowIllegalArgumentException() {
         assertThatThrownBy(() -> DeliveryStateFactory.getState("STATUS_TIDAK_ADA"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("STATUS_TIDAK_ADA");
     }
 
     @Test
-    void getState_null_shouldThrowIllegalArgumentException() {
+    void getStateNullShouldThrowIllegalArgumentException() {
         assertThatThrownBy(() -> DeliveryStateFactory.getState(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("null");

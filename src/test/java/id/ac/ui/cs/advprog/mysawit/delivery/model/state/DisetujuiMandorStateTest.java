@@ -22,44 +22,41 @@ class DisetujuiMandorStateTest {
     }
 
     @Test
-    void getStatusName_shouldReturnDisetujuiMandor() {
+    void getStatusNameShouldReturnDisetujuiMandor() {
         assertThat(state.getStatusName()).isEqualTo("DISETUJUI_MANDOR");
     }
 
     @Test
-    void advanceStatus_shouldThrowIllegalStateException() {
+    void advanceStatusShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.advanceStatus(delivery))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void mandorApprove_shouldThrowIllegalStateException() {
+    void mandorApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.mandorApprove(delivery, true, null))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void adminApprove_approved_withCustomPayload_shouldBeSelesai() {
+    void adminApproveApprovedWithCustomPayloadShouldBeSelesai() {
         state.adminApprove(delivery, true, 180.0, null);
-
         assertThat(delivery.getStatus()).isEqualTo("SELESAI");
         assertThat(delivery.getApprovedPayloadKg()).isEqualTo(180.0);
         assertThat(delivery.getRejectionReason()).isNull();
     }
 
     @Test
-    void adminApprove_approved_withNullPayload_shouldFallbackToPayloadKg() {
+    void adminApproveApprovedWithNullPayloadShouldFallbackToPayloadKg() {
         delivery.setPayloadKg(200.0);
         state.adminApprove(delivery, true, null, null);
-
         assertThat(delivery.getStatus()).isEqualTo("SELESAI");
         assertThat(delivery.getApprovedPayloadKg()).isEqualTo(200.0);
     }
 
     @Test
-    void adminApprove_rejected_shouldBeDitolakAdmin() {
+    void adminApproveRejectedShouldBeDitolakAdmin() {
         state.adminApprove(delivery, false, null, "Dokumen tidak lengkap");
-
         assertThat(delivery.getStatus()).isEqualTo("DITOLAK_ADMIN");
         assertThat(delivery.getRejectionReason()).isEqualTo("Dokumen tidak lengkap");
     }

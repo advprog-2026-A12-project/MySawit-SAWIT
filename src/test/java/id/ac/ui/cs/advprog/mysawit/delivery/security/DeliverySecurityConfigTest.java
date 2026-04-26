@@ -25,13 +25,13 @@ class DeliverySecurityConfigTest {
     }
 
     @Test
-    void corsConfigurationSource_shouldNotBeNull() {
+    void corsConfigurationSourceShouldNotBeNull() {
         CorsConfigurationSource source = config.corsConfigurationSource();
         assertThat(source).isNotNull();
     }
 
     @Test
-    void corsConfigurationSource_shouldAllowLocalhostOrigin() {
+    void corsConfigurationSourceShouldAllowLocalhostOrigin() {
         CorsConfigurationSource source = config.corsConfigurationSource();
 
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -43,7 +43,7 @@ class DeliverySecurityConfigTest {
     }
 
     @Test
-    void corsConfigurationSource_shouldAllowProductionOrigin() {
+    void corsConfigurationSourceShouldAllowProductionOrigin() {
         CorsConfigurationSource source = config.corsConfigurationSource();
 
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -55,7 +55,7 @@ class DeliverySecurityConfigTest {
     }
 
     @Test
-    void corsConfigurationSource_shouldAllowRequiredHttpMethods() {
+    void corsConfigurationSourceShouldAllowRequiredHttpMethods() {
         CorsConfigurationSource source = config.corsConfigurationSource();
 
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -68,7 +68,7 @@ class DeliverySecurityConfigTest {
     }
 
     @Test
-    void corsConfigurationSource_shouldAllowAllHeaders() {
+    void corsConfigurationSourceShouldAllowAllHeaders() {
         CorsConfigurationSource source = config.corsConfigurationSource();
 
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -80,7 +80,7 @@ class DeliverySecurityConfigTest {
     }
 
     @Test
-    void corsConfigurationSource_shouldAllowCredentials() {
+    void corsConfigurationSourceShouldAllowCredentials() {
         CorsConfigurationSource source = config.corsConfigurationSource();
 
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -92,10 +92,10 @@ class DeliverySecurityConfigTest {
     }
 
     @Test
-    void corsConfigurationSource_shouldApplyToAllPaths() {
+    void corsConfigurationSourceShouldApplyToAllPaths() {
         CorsConfigurationSource source = config.corsConfigurationSource();
 
-        for (String uri : new String[] { "/api/deliveries", "/api/supir-list", "/api/deliveries/1/status" }) {
+        for (String uri : new String[]{"/api/deliveries", "/api/supir-list", "/api/deliveries/1/status"}) {
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.setRequestURI(uri);
             CorsConfiguration corsConfig = source.getCorsConfiguration(request);

@@ -62,7 +62,7 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void createDelivery_validPayload_shouldSaveAndReturnDelivery() {
+    void createDeliveryValidPayloadShouldSaveAndReturnDelivery() {
         CreateDeliveryRequest req = buildRequest(200.0);
         Delivery saved = buildDelivery("MEMUAT");
         when(deliveryRepository.save(any())).thenReturn(saved);
@@ -74,128 +74,116 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void createDelivery_payloadTooHigh_shouldThrowIllegalArgument() {
+    void createDeliveryPayloadTooHighShouldThrowIllegalArgument() {
         CreateDeliveryRequest req = buildRequest(401.0);
-
         assertThatThrownBy(() -> deliveryService.createDelivery(req, mandorId, "Budi"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("400");
     }
 
     @Test
-    void createDelivery_payloadTooLow_shouldThrowIllegalArgument() {
+    void createDeliveryPayloadTooLowShouldThrowIllegalArgument() {
         CreateDeliveryRequest req = buildRequest(0.0);
-
         assertThatThrownBy(() -> deliveryService.createDelivery(req, mandorId, "Budi"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("1");
     }
 
     @Test
-    void createDelivery_nullPayload_shouldThrowIllegalArgument() {
+    void createDeliveryNullPayloadShouldThrowIllegalArgument() {
         CreateDeliveryRequest req = buildRequest(null);
-
         assertThatThrownBy(() -> deliveryService.createDelivery(req, mandorId, "Budi"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void getDeliveriesByRole_admin_shouldReturnAll() {
+    void getDeliveriesByRoleAdminShouldReturnAll() {
         List<Delivery> all = List.of(buildDelivery("MEMUAT"), buildDelivery("MENGIRIM"));
         when(deliveryRepository.findAll()).thenReturn(all);
 
         List<Delivery> result = deliveryService.getDeliveriesByRole(mandorId, "ADMIN");
-
         assertThat(result).hasSize(2);
     }
 
     @Test
-    void getDeliveriesByRole_mandor_shouldReturnByMandorId() {
+    void getDeliveriesByRoleMandorShouldReturnByMandorId() {
         List<Delivery> mandorDeliveries = List.of(buildDelivery("MEMUAT"));
         when(deliveryRepository.findByMandorId(mandorId)).thenReturn(mandorDeliveries);
 
         List<Delivery> result = deliveryService.getDeliveriesByRole(mandorId, "MANDOR");
-
         assertThat(result).hasSize(1);
     }
 
     @Test
-    void getDeliveriesByRole_supir_shouldReturnBySupirId() {
+    void getDeliveriesByRoleSupirShouldReturnBySupirId() {
         List<Delivery> supirDeliveries = List.of(buildDelivery("MENGIRIM"));
         when(deliveryRepository.findBySupirId(supirId)).thenReturn(supirDeliveries);
 
         List<Delivery> result = deliveryService.getDeliveriesByRole(supirId, "SUPIR_TRUK");
-
         assertThat(result).hasSize(1);
     }
 
     @Test
-    void getDeliveriesBySupirId_shouldDelegateToRepository() {
+    void getDeliveriesBySupirIdShouldDelegateToRepository() {
         List<Delivery> list = List.of(buildDelivery("MEMUAT"));
         when(deliveryRepository.findBySupirId(supirId)).thenReturn(list);
 
         List<Delivery> result = deliveryService.getDeliveriesBySupirId(supirId);
-
         assertThat(result).hasSize(1);
     }
 
     @Test
-    void getDeliveriesByMandorFiltered_withName_shouldFilterByName() {
+    void getDeliveriesByMandorFilteredWithNameShouldFilterByName() {
         List<Delivery> filtered = List.of(buildDelivery("MEMUAT"));
         when(deliveryRepository.findByMandorIdAndSupirNameContainingIgnoreCase(mandorId, "Andi"))
                 .thenReturn(filtered);
 
         List<Delivery> result = deliveryService.getDeliveriesByMandorFiltered(mandorId, "Andi");
-
         assertThat(result).hasSize(1);
     }
 
     @Test
-    void getDeliveriesByMandorFiltered_withBlankName_shouldReturnAll() {
+    void getDeliveriesByMandorFilteredWithBlankNameShouldReturnAll() {
         List<Delivery> all = List.of(buildDelivery("MEMUAT"), buildDelivery("MENGIRIM"));
         when(deliveryRepository.findByMandorId(mandorId)).thenReturn(all);
 
         List<Delivery> result = deliveryService.getDeliveriesByMandorFiltered(mandorId, "  ");
-
         assertThat(result).hasSize(2);
     }
 
     @Test
-    void getDeliveriesByMandorFiltered_withNullName_shouldReturnAll() {
+    void getDeliveriesByMandorFilteredWithNullNameShouldReturnAll() {
         List<Delivery> all = List.of(buildDelivery("MEMUAT"));
         when(deliveryRepository.findByMandorId(mandorId)).thenReturn(all);
 
         List<Delivery> result = deliveryService.getDeliveriesByMandorFiltered(mandorId, null);
-
         assertThat(result).hasSize(1);
     }
 
     @Test
-    void advanceStatus_fromMemuat_shouldTransitionToMengirim() {
+    void advanceStatusFromMuatShouldTransitionToMengirim() {
         Delivery delivery = buildDelivery("MEMUAT");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.advanceStatus(deliveryId);
-
         assertThat(result.getStatus()).isEqualTo("MENGIRIM");
         assertThat(result.getSentAt()).isNotNull();
     }
 
     @Test
-    void advanceStatus_fromMengirim_shouldTransitionToTibaDiTujuan() {
+    void advanceStatusFromMengirimShouldTransitionToTibaDiTujuan() {
         Delivery delivery = buildDelivery("MENGIRIM");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.advanceStatus(deliveryId);
-
         assertThat(result.getStatus()).isEqualTo("TIBA_DI_TUJUAN");
         assertThat(result.getArrivedAt()).isNotNull();
     }
 
     @Test
-    void advanceStatus_fromSelesai_shouldThrowIllegalState() {
+    void advanceStatusFromSelesaiShouldThrowIllegalState() {
         Delivery delivery = buildDelivery("SELESAI");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
 
@@ -204,7 +192,7 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void advanceStatus_notFound_shouldThrowRuntime() {
+    void advanceStatusNotFoundShouldThrowRuntime() {
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> deliveryService.advanceStatus(deliveryId))
@@ -213,30 +201,28 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void mandorApprove_approve_fromTibaDiTujuan_shouldBeDisetujuiMandor() {
+    void mandorApproveApproveFromTibaDiTujuanShouldBeDisetujuiMandor() {
         Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.mandorApprove(deliveryId, true, null);
-
         assertThat(result.getStatus()).isEqualTo("DISETUJUI_MANDOR");
     }
 
     @Test
-    void mandorApprove_reject_fromTibaDiTujuan_shouldBeDitolakMandor() {
+    void mandorApproveRejectFromTibaDiTujuanShouldBeDitolakMandor() {
         Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.mandorApprove(deliveryId, false, "Barang rusak");
-
         assertThat(result.getStatus()).isEqualTo("DITOLAK_MANDOR");
         assertThat(result.getRejectionReason()).isEqualTo("Barang rusak");
     }
 
     @Test
-    void mandorApprove_fromMemuat_shouldThrowIllegalState() {
+    void mandorApproveFromMuatShouldThrowIllegalState() {
         Delivery delivery = buildDelivery("MEMUAT");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
 
@@ -245,7 +231,7 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void mandorApprove_notFound_shouldThrowRuntime() {
+    void mandorApproveNotFoundShouldThrowRuntime() {
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> deliveryService.mandorApprove(deliveryId, true, null))
@@ -254,31 +240,29 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void adminApprove_approve_fromDisetujuiMandor_shouldBeSelesai() {
+    void adminApproveApproveFromDisetujuiMandorShouldBeSelesai() {
         Delivery delivery = buildDelivery("DISETUJUI_MANDOR");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.adminApprove(deliveryId, true, 180.0, null);
-
         assertThat(result.getStatus()).isEqualTo("SELESAI");
         assertThat(result.getApprovedPayloadKg()).isEqualTo(180.0);
     }
 
     @Test
-    void adminApprove_reject_fromDisetujuiMandor_shouldBeDitolakAdmin() {
+    void adminApproveRejectFromDisetujuiMandorShouldBeDitolakAdmin() {
         Delivery delivery = buildDelivery("DISETUJUI_MANDOR");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.adminApprove(deliveryId, false, null, "Dokumen kurang");
-
         assertThat(result.getStatus()).isEqualTo("DITOLAK_ADMIN");
         assertThat(result.getRejectionReason()).isEqualTo("Dokumen kurang");
     }
 
     @Test
-    void adminApprove_fromMengirim_shouldThrowIllegalState() {
+    void adminApproveFromMengirimShouldThrowIllegalState() {
         Delivery delivery = buildDelivery("MENGIRIM");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
 
@@ -287,7 +271,7 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void adminApprove_notFound_shouldThrowRuntime() {
+    void adminApproveNotFoundShouldThrowRuntime() {
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> deliveryService.adminApprove(deliveryId, true, 180.0, null))

@@ -22,26 +22,26 @@ class DitolakMandorStateTest {
     }
 
     @Test
-    void getStatusName_shouldReturnDitolakMandor() {
+    void getStatusNameShouldReturnDitolakMandor() {
         assertThat(state.getStatusName()).isEqualTo("DITOLAK_MANDOR");
     }
 
     @Test
-    void advanceStatus_shouldThrowIllegalStateException() {
+    void advanceStatusShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.advanceStatus(delivery))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("sudah final");
     }
 
     @Test
-    void mandorApprove_shouldThrowIllegalStateException() {
+    void mandorApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.mandorApprove(delivery, true, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("sudah final");
     }
 
     @Test
-    void adminApprove_shouldThrowIllegalStateException() {
+    void adminApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.adminApprove(delivery, true, 200.0, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("sudah final");

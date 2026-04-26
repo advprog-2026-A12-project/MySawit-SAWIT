@@ -22,27 +22,26 @@ class MuatStateTest {
     }
 
     @Test
-    void getStatusName_shouldReturnMemuat() {
+    void getStatusNameShouldReturnMemuat() {
         assertThat(state.getStatusName()).isEqualTo("MEMUAT");
     }
 
     @Test
-    void advanceStatus_shouldTransitionToMengirim() {
+    void advanceStatusShouldTransitionToMengirim() {
         state.advanceStatus(delivery);
-
         assertThat(delivery.getStatus()).isEqualTo("MENGIRIM");
         assertThat(delivery.getSentAt()).isNotNull();
     }
 
     @Test
-    void mandorApprove_shouldThrowIllegalStateException() {
+    void mandorApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.mandorApprove(delivery, true, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("MEMUAT");
     }
 
     @Test
-    void adminApprove_shouldThrowIllegalStateException() {
+    void adminApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.adminApprove(delivery, true, 200.0, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("MEMUAT");

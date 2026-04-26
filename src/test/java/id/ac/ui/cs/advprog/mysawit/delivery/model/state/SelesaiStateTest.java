@@ -22,26 +22,26 @@ class SelesaiStateTest {
     }
 
     @Test
-    void getStatusName_shouldReturnSelesai() {
+    void getStatusNameShouldReturnSelesai() {
         assertThat(state.getStatusName()).isEqualTo("SELESAI");
     }
 
     @Test
-    void advanceStatus_shouldThrowIllegalStateException() {
+    void advanceStatusShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.advanceStatus(delivery))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("sudah final");
     }
 
     @Test
-    void mandorApprove_shouldThrowIllegalStateException() {
+    void mandorApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.mandorApprove(delivery, true, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("sudah final");
     }
 
     @Test
-    void adminApprove_shouldThrowIllegalStateException() {
+    void adminApproveShouldThrowIllegalStateException() {
         assertThatThrownBy(() -> state.adminApprove(delivery, true, 200.0, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("sudah final");
