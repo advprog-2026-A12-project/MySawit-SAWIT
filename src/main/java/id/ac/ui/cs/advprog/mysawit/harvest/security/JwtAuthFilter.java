@@ -56,7 +56,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-            // Langsung parse tokennya. Kalau gagal, akan langsung dilempar ke blok catch di bawah
             Claims claims = jwtUtil.parseToken(token);
 
             UUID userId = jwtUtil.getUserId(claims);
@@ -65,18 +64,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             request.setAttribute("userId", userId);
             request.setAttribute("role", role);
 
-            var auth = new UsernamePasswordAuthenticationToken(
-                    userId.toString(),
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+            SecurityContextHolder.getContext().setAuthentication(
+                    new UsernamePasswordAuthenticationToken(
+                            userId.toString(),
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    )
             );
-            SecurityContextHolder.getContext().setAuthentication(auth);
 
             chain.doFilter(request, response);
 
         } catch (Exception e) {
-            //  Mengirimkan tipe error dan pesan aslinya ke frontend
-            sendUnauthorized(response, "Token error (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+            sendUnauthorized(response,
+                    "Token error (" + e.getClass().getSimpleName() + "): " + e.getMessage());
         }
     }
 

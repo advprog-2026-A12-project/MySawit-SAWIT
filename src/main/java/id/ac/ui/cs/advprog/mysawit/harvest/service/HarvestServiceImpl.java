@@ -1,12 +1,9 @@
 package id.ac.ui.cs.advprog.mysawit.harvest.service;
 
-import id.ac.ui.cs.advprog.mysawit.harvest.model.Harvest;
-import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestPhoto;
-import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
+import id.ac.ui.cs.advprog.mysawit.harvest.client.AuthClient;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.*;
+import id.ac.ui.cs.advprog.mysawit.harvest.model.*;
 import id.ac.ui.cs.advprog.mysawit.harvest.repository.HarvestRepository;
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestDetailResponse;
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestRequest;
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestResponse;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
@@ -17,10 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,9 +22,11 @@ public class HarvestServiceImpl implements HarvestService {
 
     private final HarvestRepository harvestRepository;
     private final Cloudinary cloudinary;
+    private final AuthClient authClient;
 
-    // ── Custom Exception ───────────────────────────────────────────────────────
-
+    // =========================
+    // EXCEPTIONS
+    // =========================
     public static class HarvestAlreadySubmittedException extends RuntimeException {
         public HarvestAlreadySubmittedException(String message) {
             super(message);
@@ -55,10 +51,16 @@ public class HarvestServiceImpl implements HarvestService {
         }
     }
 
-    // ── Submit Harvest ─────────────────────────────────────────────────────────
-
+    // =========================
+    // SUBMIT HARVEST
+    // =========================
     @Override
     public HarvestResponse submitHarvest(HarvestRequest request, UUID buruhId, UUID mandorId) {
+
+        if (mandorId == null) {
+            throw new RuntimeException("Buruh belum punya mandor");
+        }
+
         LocalDate today = LocalDate.now();
 
         if (harvestRepository.existsByBuruhIdAndHarvestDate(buruhId, today)) {
@@ -78,40 +80,47 @@ public class HarvestServiceImpl implements HarvestService {
 
         return mapToResponse(harvestRepository.save(harvest));
     }
-
-    // ── Buruh: Lihat Panen Sendiri ─────────────────────────────────────────────
-
+    // =========================
+    // BURUH - MY HARVEST
+    // =========================
     @Override
-    public List<HarvestResponse> getMyHarvest(UUID buruhId, LocalDate startDate,
-                                              LocalDate endDate, HarvestStatus status) {
-        return harvestRepository
-                .findWithFilter(buruhId, startDate, endDate, status)
+    public List<HarvestResponse> getMyHarvest(
+            UUID buruhId,
+            LocalDate startDate,
+            LocalDate endDate,
+            HarvestStatus status
+    ) {
+        return harvestRepository.findWithFilter(buruhId, startDate, endDate, status)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
-    // ── Mandor: Lihat Panen Bawahan ────────────────────────────────────────────
-
+    // =========================
+    // MANDOR - BAWAHAN
+    // =========================
     @Override
-    public List<HarvestResponse> getPanenBawahan(UUID mandorId, UUID buruhId, LocalDate tanggalPanen) {
-        return harvestRepository
-                .findByMandorWithFilter(mandorId, buruhId, tanggalPanen)
+    public List<HarvestResponse> getPanenBawahan(
+            UUID mandorId,
+            UUID buruhId,
+            LocalDate tanggalPanen
+    ) {
+        return harvestRepository.findByMandorWithFilter(mandorId, buruhId, tanggalPanen)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
-    // ── Mandor: Approve ────────────────────────────────────────────────────────
-
+    // =========================
+    // APPROVE
+    // =========================
     @Override
     public HarvestResponse approvePanen(UUID harvestId, UUID mandorId) {
-        Harvest harvest = findAndValidateMandorAkses(harvestId, mandorId);
+
+        Harvest harvest = findAndValidateOwnership(harvestId, mandorId);
 
         if (harvest.getStatus() != HarvestStatus.PENDING) {
-            throw new InvalidStatusTransitionException(
-                    "Panen sudah berstatus " + harvest.getStatus() + ", tidak bisa diubah"
-            );
+            throw new InvalidStatusTransitionException("Status tidak valid");
         }
 
         harvest.setStatus(HarvestStatus.APPROVED);
@@ -122,20 +131,20 @@ public class HarvestServiceImpl implements HarvestService {
         return mapToResponse(harvestRepository.save(harvest));
     }
 
-    // ── Mandor: Reject ─────────────────────────────────────────────────────────
-
+    // =========================
+    // REJECT
+    // =========================
     @Override
     public HarvestResponse rejectPanen(UUID harvestId, UUID mandorId, String alasan) {
+
         if (alasan == null || alasan.isBlank()) {
-            throw new IllegalArgumentException("Alasan penolakan wajib diisi");
+            throw new IllegalArgumentException("Alasan wajib diisi");
         }
 
-        Harvest harvest = findAndValidateMandorAkses(harvestId, mandorId);
+        Harvest harvest = findAndValidateOwnership(harvestId, mandorId);
 
         if (harvest.getStatus() != HarvestStatus.PENDING) {
-            throw new InvalidStatusTransitionException(
-                    "Panen sudah berstatus " + harvest.getStatus() + ", tidak bisa diubah"
-            );
+            throw new InvalidStatusTransitionException("Status tidak valid");
         }
 
         harvest.setStatus(HarvestStatus.REJECTED);
@@ -146,21 +155,32 @@ public class HarvestServiceImpl implements HarvestService {
         return mapToResponse(harvestRepository.save(harvest));
     }
 
-    // ── Get Detail ─────────────────────────────────────────────────────────────
-
+    // =========================
+    // DETAIL
+    // =========================
     @Override
     public HarvestDetailResponse getDetail(UUID harvestId) {
         Harvest harvest = harvestRepository.findById(harvestId)
-                .orElseThrow(() -> new HarvestNotFoundException("Harvest not found"));
+                .orElseThrow(() -> new HarvestNotFoundException("Not found"));
 
         return mapToDetail(harvest);
     }
 
-    // ── Save Photos ke Cloudinary ──────────────────────────────────────────────
+    // =========================
+    // DELETE
+    // =========================
+    @Override
+    public void deleteHarvest(UUID harvestId) {
+        harvestRepository.deleteById(harvestId);
+    }
 
+    // =========================
+    // CLOUDINARY
+    // =========================
     public void savePhotos(UUID harvestId, List<MultipartFile> photos) {
+
         Harvest harvest = harvestRepository.findById(harvestId)
-                .orElseThrow(() -> new HarvestNotFoundException("Harvest not found"));
+                .orElseThrow(() -> new HarvestNotFoundException("Not found"));
 
         if (harvest.getPhotos() == null) {
             harvest.setPhotos(new ArrayList<>());
@@ -168,49 +188,44 @@ public class HarvestServiceImpl implements HarvestService {
 
         for (MultipartFile file : photos) {
             try {
-                Map uploadResult = cloudinary.uploader()
+                Map upload = cloudinary.uploader()
                         .upload(file.getBytes(), ObjectUtils.emptyMap());
 
-                String imageUrl = uploadResult.get("secure_url").toString();
+                String url = upload.get("secure_url").toString();
 
                 HarvestPhoto photo = HarvestPhoto.builder()
-                        .fileUrl(imageUrl)
+                        .fileUrl(url)
                         .harvest(harvest)
                         .build();
 
                 harvest.getPhotos().add(photo);
 
             } catch (IOException e) {
-                throw new RuntimeException("Gagal upload foto ke Cloudinary", e);
+                throw new RuntimeException("Upload gagal", e);
             }
         }
 
         harvestRepository.save(harvest);
     }
 
-    // ── Delete (Testing) ───────────────────────────────────────────────────────
+    // =========================
+    // SECURITY CHECK
+    // =========================
+    private Harvest findAndValidateOwnership(UUID harvestId, UUID mandorId) {
 
-    @Override
-    public void deleteHarvest(UUID harvestId) {
         Harvest harvest = harvestRepository.findById(harvestId)
-                .orElseThrow(() -> new HarvestNotFoundException("Harvest not found"));
-
-        harvestRepository.delete(harvest);
-    }
-
-    // ── Private Helpers ────────────────────────────────────────────────────────
-
-    private Harvest findAndValidateMandorAkses(UUID harvestId, UUID mandorId) {
-        Harvest harvest = harvestRepository.findById(harvestId)
-                .orElseThrow(() -> new HarvestNotFoundException("Harvest not found"));
+                .orElseThrow(() -> new HarvestNotFoundException("Not found"));
 
         if (!harvest.getMandorId().equals(mandorId)) {
-            throw new UnauthorizedMandorException("Panen ini bukan bawahan kamu");
+            throw new UnauthorizedMandorException("Unauthorized");
         }
 
         return harvest;
     }
 
+    // =========================
+    // MAPPING
+    // =========================
     private HarvestResponse mapToResponse(Harvest harvest) {
         return HarvestResponse.builder()
                 .id(harvest.getId())
@@ -225,7 +240,8 @@ public class HarvestServiceImpl implements HarvestService {
     }
 
     private HarvestDetailResponse mapToDetail(Harvest harvest) {
-        List<String> photoUrls = harvest.getPhotos() == null
+
+        List<String> photos = harvest.getPhotos() == null
                 ? List.of()
                 : harvest.getPhotos().stream()
                 .map(HarvestPhoto::getFileUrl)
@@ -241,7 +257,7 @@ public class HarvestServiceImpl implements HarvestService {
                 .status(harvest.getStatus())
                 .rejectionReason(harvest.getRejectionReason())
                 .bisaDiangkutTruk(harvest.getBisaDiangkutTruk())
-                .photos(photoUrls)
+                .photos(photos)
                 .build();
     }
 }

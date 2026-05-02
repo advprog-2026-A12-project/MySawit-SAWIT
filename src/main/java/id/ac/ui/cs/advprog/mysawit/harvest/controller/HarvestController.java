@@ -1,38 +1,22 @@
 package id.ac.ui.cs.advprog.mysawit.harvest.controller;
 
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.ApproveRejectRequest;
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestDetailResponse;
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestRequest;
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.client.AuthClient;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.*;
 import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
 import id.ac.ui.cs.advprog.mysawit.harvest.service.HarvestService;
 import id.ac.ui.cs.advprog.mysawit.harvest.service.HarvestServiceImpl;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -42,69 +26,68 @@ public class HarvestController {
 
     private final HarvestService harvestService;
     private final HarvestServiceImpl harvestServiceImpl;
+    private final AuthClient authClient;
 
-    // ── Helper: ambil data user dari request attribute (diset oleh JwtAuthFilter)
-    private UUID getUserId(HttpServletRequest request) {
-        return (UUID) request.getAttribute("userId");
-    }
-
-    private String getRole(HttpServletRequest request) {
-        return (String) request.getAttribute("role");
-    }
-
-    private UUID getMandorId(HttpServletRequest request) {
-        return (UUID) request.getAttribute("mandorId");
+    // =========================
+    // HELPERS
+    // =========================
+    private String extractToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Missing or invalid Authorization header");
+        }
+        return authHeader.substring(7);
     }
 
     private ResponseEntity<?> forbiddenRole(String expected, String actual) {
-        return ResponseEntity.status(403)
-                .body(java.util.Map.of(
-                        "error", "Akses ditolak. Role dibutuhkan: " + expected + ", role kamu: " + actual
-                ));
+        return ResponseEntity.status(403).body(
+                Map.of("error",
+                        "Akses ditolak. Role dibutuhkan: " + expected + ", role kamu: " + actual)
+        );
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // BURUH: Submit panen (JSON)
-    // POST /api/harvest
-    // Header: Authorization: Bearer <token>
-    // Body: { "kilogram": 10.5, "reportNote": "..." }
-    // ══════════════════════════════════════════════════════════════════════════
+    // =========================
+    // BURUH: SUBMIT JSON
+    // =========================
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> submitJson(
-            HttpServletRequest request,
+            @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody HarvestRequest body
     ) {
-        String role = getRole(request);
-        if (!"BURUH".equals(role)) {
-            return forbiddenRole("BURUH", role);
+        String token = extractToken(authHeader);
+
+        UserProfile user = authClient.getMe(token);
+
+        if (!"BURUH".equals(user.getRole())) {
+            return forbiddenRole("BURUH", user.getRole());
         }
 
-        UUID buruhId  = getUserId(request);
-        UUID mandorId = getMandorId(request); // dari JWT payload Buruh
+        UUID buruhId = user.getId();
+        UUID mandorId = user.getMandorId();
 
         HarvestResponse response = harvestService.submitHarvest(body, buruhId, mandorId);
+
         return ResponseEntity.status(201).body(response);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // BURUH: Submit panen + upload foto (multipart)
-    // POST /api/harvest
-    // Header: Authorization: Bearer <token>
-    // Form-data: kilogram, reportNote, photos (multiple files)
-    // ══════════════════════════════════════════════════════════════════════════
+    // =========================
+    // BURUH: SUBMIT MULTIPART + FOTO
+    // =========================
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> submitMultipart(
-            HttpServletRequest request,
+            @RequestHeader("Authorization") String authHeader,
             @Valid @ModelAttribute HarvestRequest body,
             @RequestPart(required = false) List<MultipartFile> photos
     ) {
-        String role = getRole(request);
-        if (!"BURUH".equals(role)) {
-            return forbiddenRole("BURUH", role);
+        String token = extractToken(authHeader);
+
+        UserProfile user = authClient.getMe(token);
+
+        if (!"BURUH".equals(user.getRole())) {
+            return forbiddenRole("BURUH", user.getRole());
         }
 
-        UUID buruhId  = getUserId(request);
-        UUID mandorId = getMandorId(request);
+        UUID buruhId = user.getId();
+        UUID mandorId = user.getMandorId();
 
         HarvestResponse response = harvestService.submitHarvest(body, buruhId, mandorId);
 
@@ -115,124 +98,125 @@ public class HarvestController {
         return ResponseEntity.status(201).body(response);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // BURUH: Lihat riwayat panen sendiri + alasan tolak kalau REJECTED
-    // GET /api/harvest/my?startDate=&endDate=&status=
-    // ══════════════════════════════════════════════════════════════════════════
+    // =========================
+    // BURUH: MY HARVEST
+    // =========================
     @GetMapping("/my")
     public ResponseEntity<?> myHarvest(
-            HttpServletRequest request,
-
+            @RequestHeader("Authorization") String authHeader,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-
             @RequestParam(required = false) HarvestStatus status
     ) {
-        String role = getRole(request);
-        if (!"BURUH".equals(role)) {
-            return forbiddenRole("BURUH", role);
+        String token = extractToken(authHeader);
+
+        UserProfile user = authClient.getMe(token);
+
+        if (!"BURUH".equals(user.getRole())) {
+            return forbiddenRole("BURUH", user.getRole());
         }
 
-        UUID buruhId = getUserId(request);
-
         return ResponseEntity.ok(
-                harvestService.getMyHarvest(buruhId, startDate, endDate, status)
+                harvestService.getMyHarvest(user.getId(), startDate, endDate, status)
         );
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // MANDOR: Lihat panen semua bawahan
-    // GET /api/harvest/bawahan?buruhId=&tanggalPanen=
-    // ══════════════════════════════════════════════════════════════════════════
+    // =========================
+    // MANDOR: BAWAHAN
+    // =========================
     @GetMapping("/bawahan")
     public ResponseEntity<?> panenBawahan(
-            HttpServletRequest request,
-
+            @RequestHeader("Authorization") String authHeader,
             @RequestParam(required = false) UUID buruhId,
-
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalPanen
     ) {
-        String role = getRole(request);
-        if (!"MANDOR".equals(role)) {
-            return forbiddenRole("MANDOR", role);
+        String token = extractToken(authHeader);
+
+        UserProfile user = authClient.getMe(token);
+
+        if (!"MANDOR".equals(user.getRole())) {
+            return forbiddenRole("MANDOR", user.getRole());
         }
 
-        UUID mandorId = getUserId(request); // Mandor = subject token
+        UUID mandorId = user.getId();
 
         return ResponseEntity.ok(
                 harvestService.getPanenBawahan(mandorId, buruhId, tanggalPanen)
         );
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // MANDOR: Approve panen
-    // PATCH /api/harvest/{id}/approve
-    // ══════════════════════════════════════════════════════════════════════════
+    // =========================
+    // MANDOR: APPROVE
+    // =========================
     @PatchMapping("/{id}/approve")
     public ResponseEntity<?> approvePanen(
-            @PathVariable UUID id,
-            HttpServletRequest request
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID id
     ) {
-        String role = getRole(request);
-        if (!"MANDOR".equals(role)) {
-            return forbiddenRole("MANDOR", role);
+        String token = extractToken(authHeader);
+
+        UserProfile user = authClient.getMe(token);
+
+        if (!"MANDOR".equals(user.getRole())) {
+            return forbiddenRole("MANDOR", user.getRole());
         }
-
-        UUID mandorId = getUserId(request);
-
-        return ResponseEntity.ok(harvestService.approvePanen(id, mandorId));
-    }
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // MANDOR: Reject panen (alasan wajib diisi)
-    // PATCH /api/harvest/{id}/reject
-    // Body: { "rejectionReason": "..." }
-    // ══════════════════════════════════════════════════════════════════════════
-    @PatchMapping("/{id}/reject")
-    public ResponseEntity<?> rejectPanen(
-            @PathVariable UUID id,
-            HttpServletRequest request,
-            @RequestBody ApproveRejectRequest body
-    ) {
-        String role = getRole(request);
-        if (!"MANDOR".equals(role)) {
-            return forbiddenRole("MANDOR", role);
-        }
-
-        UUID mandorId = getUserId(request);
 
         return ResponseEntity.ok(
-                harvestService.rejectPanen(id, mandorId, body.getRejectionReason())
+                harvestService.approvePanen(id, user.getId())
         );
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // Detail satu panen (semua role bisa akses)
-    // GET /api/harvest/{id}
-    // ══════════════════════════════════════════════════════════════════════════
-    @GetMapping("/{id}")
-    public ResponseEntity<HarvestDetailResponse> detail(@PathVariable UUID id) {
-        return ResponseEntity.ok(harvestService.getDetail(id));
+    // =========================
+    // MANDOR: REJECT
+    // =========================
+    @PatchMapping("/{id}/reject")
+    public ResponseEntity<?> rejectPanen(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID id,
+            @RequestBody ApproveRejectRequest body
+    ) {
+        String token = extractToken(authHeader);
+
+        UserProfile user = authClient.getMe(token);
+
+        if (!"MANDOR".equals(user.getRole())) {
+            return forbiddenRole("MANDOR", user.getRole());
+        }
+
+        return ResponseEntity.ok(
+                harvestService.rejectPanen(
+                        id,
+                        user.getId(),
+                        body.getRejectionReason()
+                )
+        );
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // Delete (untuk testing — bisa dihapus di production)
-    // DELETE /api/harvest/{id}
-    // ══════════════════════════════════════════════════════════════════════════
+    // =========================
+    // DETAIL
+    // =========================
+    @GetMapping("/{id}")
+    public ResponseEntity<HarvestDetailResponse> detail(@PathVariable UUID id) {
+        return ResponseEntity.ok(
+                harvestService.getDetail(id)
+        );
+    }
+
+    // =========================
+    // DELETE
+    // =========================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteHarvest(@PathVariable UUID id) {
         harvestService.deleteHarvest(id);
         return ResponseEntity.ok().build();
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // Health check
-    // GET /api/harvest/health
-    // ══════════════════════════════════════════════════════════════════════════
+    // =========================
+    // HEALTH
+    // =========================
     @GetMapping("/health")
     public String health() {
         return "OK";

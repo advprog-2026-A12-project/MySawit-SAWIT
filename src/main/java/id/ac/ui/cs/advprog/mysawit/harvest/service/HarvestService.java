@@ -11,25 +11,34 @@ import java.util.UUID;
 
 public interface HarvestService {
 
-    // Buruh submit panen
+    // =========================
+    // BURUH SUBMIT
+    // =========================
     HarvestResponse submitHarvest(HarvestRequest request, UUID buruhId, UUID mandorId);
+    // =========================
+    // BURUH - MY HARVEST
+    // =========================
+    List<HarvestResponse> getMyHarvest(
+            UUID buruhId,
+            LocalDate startDate,
+            LocalDate endDate,
+            HarvestStatus status
+    );
 
-    // Buruh lihat panen miliknya
-    List<HarvestResponse> getMyHarvest(UUID buruhId, LocalDate startDate,
-                                       LocalDate endDate, HarvestStatus status);
+    // =========================
+    // MANDOR - LIST BAWAHAN
+    // =========================
+    List<HarvestResponse> getPanenBawahan(
+            UUID mandorId,
+            UUID buruhId,
+            LocalDate tanggalPanen
+    );
 
-    // Mandor lihat panen bawahannya
-    List<HarvestResponse> getPanenBawahan(UUID mandorId, UUID buruhId, LocalDate tanggalPanen);
-
-    // Detail satu panen
     HarvestDetailResponse getDetail(UUID harvestId);
 
-    // Mandor approve
     HarvestResponse approvePanen(UUID harvestId, UUID mandorId);
 
-    // Mandor reject + wajib alasan
     HarvestResponse rejectPanen(UUID harvestId, UUID mandorId, String alasan);
 
-    // Delete (untuk testing)
     void deleteHarvest(UUID harvestId);
 }

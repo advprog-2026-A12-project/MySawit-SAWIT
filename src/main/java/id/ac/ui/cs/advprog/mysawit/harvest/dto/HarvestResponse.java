@@ -1,4 +1,3 @@
-// dto/HarvestResponse.java — tambah field baru
 package id.ac.ui.cs.advprog.mysawit.harvest.dto;
 
 import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
