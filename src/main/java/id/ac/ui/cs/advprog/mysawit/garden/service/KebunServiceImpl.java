@@ -206,16 +206,36 @@ public class KebunServiceImpl implements KebunService {
     }
 
     private void applyUpdates(Kebun kebun, KebunUpdateRequest request) {
-        if (request.getNama() != null)      kebun.setNama(request.getNama());
-        if (request.getLuasHektare() != null) kebun.setLuasHektare(request.getLuasHektare());
-        if (request.getCoord1Lat() != null) kebun.setCoord1Lat(request.getCoord1Lat());
-        if (request.getCoord1Lng() != null) kebun.setCoord1Lng(request.getCoord1Lng());
-        if (request.getCoord2Lat() != null) kebun.setCoord2Lat(request.getCoord2Lat());
-        if (request.getCoord2Lng() != null) kebun.setCoord2Lng(request.getCoord2Lng());
-        if (request.getCoord3Lat() != null) kebun.setCoord3Lat(request.getCoord3Lat());
-        if (request.getCoord3Lng() != null) kebun.setCoord3Lng(request.getCoord3Lng());
-        if (request.getCoord4Lat() != null) kebun.setCoord4Lat(request.getCoord4Lat());
-        if (request.getCoord4Lng() != null) kebun.setCoord4Lng(request.getCoord4Lng());
+        if (request.getNama() != null) {
+            kebun.setNama(request.getNama());
+        }
+        if (request.getLuasHektare() != null) {
+            kebun.setLuasHektare(request.getLuasHektare());
+        }
+        if (request.getCoord1Lat() != null) {
+            kebun.setCoord1Lat(request.getCoord1Lat());
+        }
+        if (request.getCoord1Lng() != null) {
+            kebun.setCoord1Lng(request.getCoord1Lng());
+        }
+        if (request.getCoord2Lat() != null) {
+            kebun.setCoord2Lat(request.getCoord2Lat());
+        }
+        if (request.getCoord2Lng() != null) {
+            kebun.setCoord2Lng(request.getCoord2Lng());
+        }
+        if (request.getCoord3Lat() != null) {
+            kebun.setCoord3Lat(request.getCoord3Lat());
+        }
+        if (request.getCoord3Lng() != null) {
+            kebun.setCoord3Lng(request.getCoord3Lng());
+        }
+        if (request.getCoord4Lat() != null) {
+            kebun.setCoord4Lat(request.getCoord4Lat());
+        }
+        if (request.getCoord4Lng() != null) {
+            kebun.setCoord4Lng(request.getCoord4Lng());
+        }
     }
 
     private void deactivateAllSupirAssignments(UUID kebunId) {
@@ -329,8 +349,12 @@ public class KebunServiceImpl implements KebunService {
     }
 
     private boolean isValidPolygon(Kebun kebun) {
-        if (hasNullCoordinates(kebun)) return false;
-        if (countUniquePoints(kebun) < 4) return false;
+        if (hasNullCoordinates(kebun)) {
+            return false;
+        }
+        if (countUniquePoints(kebun) < 4) {
+            return false;
+        }
         return Math.abs(computeTwiceArea(kebun)) > 1e-12;
     }
 
