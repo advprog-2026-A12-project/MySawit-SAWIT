@@ -5,6 +5,6 @@ import java.util.UUID;
 public class KebunNotFoundException extends RuntimeException {
 
     public KebunNotFoundException(UUID kebunId) {
-        super("Kebun dengan id " + kebunId + " tidak ditemukan");
+        super("Kebun tidak ditemukan");
     }
 }

@@ -11,6 +11,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Response detail kebun termasuk informasi mandor dan supir.
+ * Pada Milestone 75%, field mandor dan supir diperkaya dengan nama/email
+ * yang diambil dari Auth Service.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,12 +35,34 @@ public class KebunDetailResponse {
     private Double coord3Lng;
     private Double coord4Lat;
     private Double coord4Lng;
+
+    // Mandor detail (enriched dari Auth Service)
     private UUID mandorId;
-    private List<UUID> supirIds;
+    private String mandorName;
+    private String mandorEmail;
+
+    // Supir detail list (enriched dari Auth Service)
+    private List<SupirDetail> supirList;
+    private Integer totalSupir;
 
     @JsonProperty("isActive")
     private Boolean isActive;
 
     private Instant createdAt;
     private Instant updatedAt;
+
+    /**
+     * Detail supir yang ditugaskan ke kebun ini.
+     */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SupirDetail {
+        private UUID id;
+        private String name;
+        private String email;
+        private Instant assignedAt;
+    }
 }
