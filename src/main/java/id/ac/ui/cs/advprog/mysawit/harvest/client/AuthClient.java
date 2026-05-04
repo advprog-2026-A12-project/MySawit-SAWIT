@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mysawit.harvest.client;
 
 import id.ac.ui.cs.advprog.mysawit.harvest.dto.UserProfile;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -13,7 +14,9 @@ public class AuthClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private static final String AUTH_URL = "https://mysawit-auth.onrender.com/api/v1";
+    // Nilai default ini dipakai kalau environment variable auth.service.url kosong
+    @Value("${auth.service.url:https://mysawit-auth.onrender.com/api/v1}")
+    private String authUrl;
 
     private HttpHeaders createAuthHeader(String token) {
         HttpHeaders headers = new HttpHeaders();
@@ -22,13 +25,10 @@ public class AuthClient {
         return headers;
     }
 
-    // =========================
-    // GET FULL USER PROFILE (/users/me)
-    // =========================
     public UserProfile getMe(String token) {
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                AUTH_URL + "/users/me",
+                authUrl + "/users/me",
                 HttpMethod.GET,
                 new HttpEntity<>(createAuthHeader(token)),
                 Map.class
