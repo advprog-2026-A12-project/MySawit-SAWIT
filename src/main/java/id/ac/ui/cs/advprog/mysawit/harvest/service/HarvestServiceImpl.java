@@ -1,9 +1,13 @@
 package id.ac.ui.cs.advprog.mysawit.harvest.service;
 
 import id.ac.ui.cs.advprog.mysawit.harvest.client.AuthClient;
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.*;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestRequest;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestResponse;
 import id.ac.ui.cs.advprog.mysawit.harvest.event.HarvestApprovedEvent;
-import id.ac.ui.cs.advprog.mysawit.harvest.model.*;
+import id.ac.ui.cs.advprog.mysawit.harvest.model.Harvest;
+import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestPhoto;
+import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
 import id.ac.ui.cs.advprog.mysawit.harvest.repository.HarvestRepository;
 
 import com.cloudinary.Cloudinary;
@@ -17,7 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,16 +37,27 @@ public class HarvestServiceImpl implements HarvestService {
 
     // EXCEPTIONS
     public static class HarvestAlreadySubmittedException extends RuntimeException {
-        public HarvestAlreadySubmittedException(String message) { super(message); }
+        public HarvestAlreadySubmittedException(String message) {
+            super(message);
+        }
     }
+
     public static class HarvestNotFoundException extends RuntimeException {
-        public HarvestNotFoundException(String message) { super(message); }
+        public HarvestNotFoundException(String message) {
+            super(message);
+        }
     }
+
     public static class UnauthorizedMandorException extends RuntimeException {
-        public UnauthorizedMandorException(String message) { super(message); }
+        public UnauthorizedMandorException(String message) {
+            super(message);
+        }
     }
+
     public static class InvalidStatusTransitionException extends RuntimeException {
-        public InvalidStatusTransitionException(String message) { super(message); }
+        public InvalidStatusTransitionException(String message) {
+            super(message);
+        }
     }
 
     @Override
@@ -70,7 +88,8 @@ public class HarvestServiceImpl implements HarvestService {
     }
 
     @Override
-    public List<HarvestResponse> getMyHarvest(UUID buruhId, LocalDate startDate, LocalDate endDate, HarvestStatus status) {
+    public List<HarvestResponse> getMyHarvest(
+            UUID buruhId, LocalDate startDate, LocalDate endDate, HarvestStatus status) {
         return harvestRepository.findWithFilter(buruhId, startDate, endDate, status)
                 .stream()
                 .map(this::mapToResponse)
@@ -154,7 +173,9 @@ public class HarvestServiceImpl implements HarvestService {
                 .orElseThrow(() -> new HarvestNotFoundException("Not found"));
 
         for (MultipartFile file : photos) {
-            if (file.isEmpty()) continue; // Skip kalau file kosong
+            if (file.isEmpty()) {
+                continue; // Menambahkan kurung kurawal agar lolos Checkstyle
+            }
 
             try {
                 // Upload ke Cloudinary
