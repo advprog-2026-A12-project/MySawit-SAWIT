@@ -14,10 +14,6 @@ public class DeliveryStateFactory {
             case "MEMUAT" -> new MuatState();
             case "MENGIRIM" -> new MengirimState();
             case "TIBA_DI_TUJUAN" -> new TibaDiTujuanState();
-            case "DISETUJUI_MANDOR" -> new DisetujuiMandorState();
-            case "DITOLAK_MANDOR" -> new DitolakMandorState();
-            case "SELESAI" -> new SelesaiState();
-            case "DITOLAK_ADMIN" -> new DitolakAdminState();
             default -> throw new IllegalArgumentException("Status pengiriman tidak dikenali: " + status);
         };
     }

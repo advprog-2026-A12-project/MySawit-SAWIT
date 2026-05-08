@@ -13,19 +13,6 @@ public class MuatState implements DeliveryState {
     }
 
     @Override
-    public void mandorApprove(Delivery delivery, boolean isApproved, String rejectionReason) {
-        throw new IllegalStateException(
-                "Persetujuan Mandor tidak dapat dilakukan pada status: " + getStatusName());
-    }
-
-    @Override
-    public void adminApprove(Delivery delivery, boolean isApproved,
-            Double approvedPayloadKg, String rejectionReason) {
-        throw new IllegalStateException(
-                "Persetujuan Admin tidak dapat dilakukan pada status: " + getStatusName());
-    }
-
-    @Override
     public String getStatusName() {
         return "MEMUAT";
     }
