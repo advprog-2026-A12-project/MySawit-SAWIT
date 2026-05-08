@@ -10,6 +10,10 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Response ringkasan kebun untuk daftar.
+ * Milestone 75%: ditambah mandorName agar list menampilkan nama mandor.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,6 +26,8 @@ public class KebunResponse {
     private String kode;
     private Double luasHektare;
     private UUID mandorId;
+    private String mandorName;
+    private Integer totalSupir;
 
     @JsonProperty("isActive")
     private Boolean isActive;
