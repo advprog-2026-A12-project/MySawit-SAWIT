@@ -7,13 +7,15 @@ import lombok.Data;
 
 import java.util.UUID;
 
+import java.util.List;
+
 @Data
 public class CreateDeliveryRequest {
     @NotNull
     private UUID supirId;
 
     @NotNull
-    private UUID harvestId;
+    private List<UUID> harvestIds;
 
     @NotNull
     @Min(value = 1, message = "Payload minimal 1 Kg")
