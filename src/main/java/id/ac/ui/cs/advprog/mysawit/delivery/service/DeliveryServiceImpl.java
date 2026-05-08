@@ -30,11 +30,13 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = Delivery.builder()
                 .supirId(request.getSupirId())
                 .supirName(request.getSupirName())
-                .harvestId(request.getHarvestId())
+                .harvestIds(request.getHarvestIds())
                 .mandorId(mandorId)
                 .mandorName(mandorName)
                 .payloadKg(request.getPayloadKg())
                 .status(STATUS_MEMUAT)
+                .approvalStatus("PENDING")
+                .tanggal(java.time.LocalDateTime.now())
                 .build();
 
         return deliveryRepository.save(delivery);
@@ -81,8 +83,20 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery tidak ditemukan"));
 
-        DeliveryState state = DeliveryStateFactory.getState(delivery.getStatus());
-        state.mandorApprove(delivery, isApproved, rejectionReason);
+        if (!"TIBA_DI_TUJUAN".equals(delivery.getStatus())) {
+            throw new IllegalStateException("Persetujuan Mandor hanya dapat dilakukan pada status TIBA_DI_TUJUAN");
+        }
+        if (!"PENDING".equals(delivery.getApprovalStatus())) {
+            throw new IllegalStateException("Pengiriman sudah diproses persetujuannya");
+        }
+
+        if (isApproved) {
+            delivery.setApprovalStatus("APPROVED");
+            delivery.setRejectionReason(null);
+        } else {
+            delivery.setApprovalStatus("REJECTED");
+            delivery.setRejectionReason(rejectionReason);
+        }
 
         return deliveryRepository.save(delivery);
     }
@@ -93,8 +107,21 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery tidak ditemukan"));
 
-        DeliveryState state = DeliveryStateFactory.getState(delivery.getStatus());
-        state.adminApprove(delivery, isApproved, approvedPayloadKg, rejectionReason);
+        if (!"TIBA_DI_TUJUAN".equals(delivery.getStatus())) {
+            throw new IllegalStateException("Persetujuan Admin hanya dapat dilakukan pada status TIBA_DI_TUJUAN");
+        }
+        if (!"APPROVED".equals(delivery.getApprovalStatus())) {
+            throw new IllegalStateException("Persetujuan Admin memerlukan persetujuan Mandor terlebih dahulu");
+        }
+
+        if (isApproved) {
+            delivery.setApprovalStatus("APPROVED");
+            delivery.setApprovedPayloadKg(approvedPayloadKg != null ? approvedPayloadKg : delivery.getPayloadKg());
+            delivery.setRejectionReason(null);
+        } else {
+            delivery.setApprovalStatus("REJECTED");
+            delivery.setRejectionReason(rejectionReason);
+        }
 
         return deliveryRepository.save(delivery);
     }
