@@ -51,10 +51,16 @@ public class DeliveryController {
     public ResponseEntity<?> getDeliveries(
             @RequestAttribute(value = "role", required = false) String role,
             @RequestAttribute(value = "userId", required = false) UUID userId,
-            @RequestParam(required = false) String supirName) {
+            @RequestParam(required = false) String supirName,
+            @RequestParam(required = false) UUID mandorId,
+            @RequestParam(required = false) String date) {
 
         if (role == null || userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        if ("ADMIN".equals(role)) {
+            return ResponseEntity.ok(deliveryService.getDeliveriesForAdmin(mandorId, date));
         }
 
         if ("MANDOR".equals(role) && supirName != null) {

@@ -1,0 +1,285 @@
+package id.ac.ui.cs.advprog.mysawit.delivery.service;
+
+import id.ac.ui.cs.advprog.mysawit.delivery.dto.CreateDeliveryRequest;
+import id.ac.ui.cs.advprog.mysawit.delivery.model.Delivery;
+import id.ac.ui.cs.advprog.mysawit.delivery.repository.DeliveryRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class DeliveryServiceImplTest {
+
+    @Mock
+    private DeliveryRepository deliveryRepository;
+
+    @InjectMocks
+    private DeliveryServiceImpl deliveryService;
+
+    private UUID mandorId;
+    private UUID supirId;
+    private UUID harvestId;
+    private UUID deliveryId;
+
+    @BeforeEach
+    void setUp() {
+        mandorId = UUID.randomUUID();
+        supirId = UUID.randomUUID();
+        harvestId = UUID.randomUUID();
+        deliveryId = UUID.randomUUID();
+    }
+
+    private CreateDeliveryRequest buildRequest(Double payload) {
+        CreateDeliveryRequest req = new CreateDeliveryRequest();
+        req.setSupirId(supirId);
+        req.setSupirName("Andi Supir");
+        req.setHarvestIds(List.of(harvestId));
+        req.setPayloadKg(payload);
+        return req;
+    }
+
+    private Delivery buildDelivery(String status) {
+        return Delivery.builder()
+                .supirId(supirId)
+                .mandorId(mandorId)
+                .harvestIds(List.of(harvestId))
+                .payloadKg(200.0)
+                .status(status)
+                .build();
+    }
+
+    @Test
+    void createDeliveryValidPayloadShouldSaveAndReturnDelivery() {
+        CreateDeliveryRequest req = buildRequest(200.0);
+        Delivery saved = buildDelivery("MEMUAT");
+        when(deliveryRepository.save(any())).thenReturn(saved);
+
+        Delivery result = deliveryService.createDelivery(req, mandorId, "Budi Mandor");
+
+        assertThat(result.getStatus()).isEqualTo("MEMUAT");
+        verify(deliveryRepository).save(any(Delivery.class));
+    }
+
+    @Test
+    void createDeliveryPayloadTooHighShouldThrowIllegalArgument() {
+        CreateDeliveryRequest req = buildRequest(401.0);
+        assertThatThrownBy(() -> deliveryService.createDelivery(req, mandorId, "Budi"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("400");
+    }
+
+    @Test
+    void createDeliveryPayloadTooLowShouldThrowIllegalArgument() {
+        CreateDeliveryRequest req = buildRequest(0.0);
+        assertThatThrownBy(() -> deliveryService.createDelivery(req, mandorId, "Budi"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("1");
+    }
+
+    @Test
+    void createDeliveryNullPayloadShouldThrowIllegalArgument() {
+        CreateDeliveryRequest req = buildRequest(null);
+        assertThatThrownBy(() -> deliveryService.createDelivery(req, mandorId, "Budi"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void getDeliveriesByRoleAdminShouldReturnAll() {
+        List<Delivery> all = List.of(buildDelivery("MEMUAT"), buildDelivery("MENGIRIM"));
+        when(deliveryRepository.findAll()).thenReturn(all);
+
+        List<Delivery> result = deliveryService.getDeliveriesByRole(mandorId, "ADMIN");
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void getDeliveriesByRoleMandorShouldReturnByMandorId() {
+        List<Delivery> mandorDeliveries = List.of(buildDelivery("MEMUAT"));
+        when(deliveryRepository.findByMandorId(mandorId)).thenReturn(mandorDeliveries);
+
+        List<Delivery> result = deliveryService.getDeliveriesByRole(mandorId, "MANDOR");
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void getDeliveriesByRoleSupirShouldReturnBySupirId() {
+        List<Delivery> supirDeliveries = List.of(buildDelivery("MENGIRIM"));
+        when(deliveryRepository.findBySupirId(supirId)).thenReturn(supirDeliveries);
+
+        List<Delivery> result = deliveryService.getDeliveriesByRole(supirId, "SUPIR_TRUK");
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void getDeliveriesBySupirIdShouldDelegateToRepository() {
+        List<Delivery> list = List.of(buildDelivery("MEMUAT"));
+        when(deliveryRepository.findBySupirId(supirId)).thenReturn(list);
+
+        List<Delivery> result = deliveryService.getDeliveriesBySupirId(supirId);
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void getDeliveriesByMandorFilteredWithNameShouldFilterByName() {
+        List<Delivery> filtered = List.of(buildDelivery("MEMUAT"));
+        when(deliveryRepository.findByMandorIdAndSupirNameContainingIgnoreCase(mandorId, "Andi"))
+                .thenReturn(filtered);
+
+        List<Delivery> result = deliveryService.getDeliveriesByMandorFiltered(mandorId, "Andi");
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void getDeliveriesByMandorFilteredWithBlankNameShouldReturnAll() {
+        List<Delivery> all = List.of(buildDelivery("MEMUAT"), buildDelivery("MENGIRIM"));
+        when(deliveryRepository.findByMandorId(mandorId)).thenReturn(all);
+
+        List<Delivery> result = deliveryService.getDeliveriesByMandorFiltered(mandorId, "  ");
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void getDeliveriesByMandorFilteredWithNullNameShouldReturnAll() {
+        List<Delivery> all = List.of(buildDelivery("MEMUAT"));
+        when(deliveryRepository.findByMandorId(mandorId)).thenReturn(all);
+
+        List<Delivery> result = deliveryService.getDeliveriesByMandorFiltered(mandorId, null);
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void advanceStatusFromMuatShouldTransitionToMengirim() {
+        Delivery delivery = buildDelivery("MEMUAT");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+        when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Delivery result = deliveryService.advanceStatus(deliveryId);
+        assertThat(result.getStatus()).isEqualTo("MENGIRIM");
+        assertThat(result.getSentAt()).isNotNull();
+    }
+
+    @Test
+    void advanceStatusFromMengirimShouldTransitionToTibaDiTujuan() {
+        Delivery delivery = buildDelivery("MENGIRIM");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+        when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Delivery result = deliveryService.advanceStatus(deliveryId);
+        assertThat(result.getStatus()).isEqualTo("TIBA_DI_TUJUAN");
+        assertThat(result.getArrivedAt()).isNotNull();
+    }
+
+    @Test
+    void advanceStatusFromTibaDiTujuanShouldThrowIllegalState() {
+        Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+
+        assertThatThrownBy(() -> deliveryService.advanceStatus(deliveryId))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void advanceStatusNotFoundShouldThrowRuntime() {
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> deliveryService.advanceStatus(deliveryId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("tidak ditemukan");
+    }
+
+    @Test
+    void mandorApproveApproveFromTibaDiTujuanShouldBeApproved() {
+        Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        delivery.setApprovalStatus("PENDING");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+        when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Delivery result = deliveryService.mandorApprove(deliveryId, true, null);
+        assertThat(result.getApprovalStatus()).isEqualTo("APPROVED");
+    }
+
+    @Test
+    void mandorApproveRejectFromTibaDiTujuanShouldBeRejected() {
+        Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        delivery.setApprovalStatus("PENDING");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+        when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Delivery result = deliveryService.mandorApprove(deliveryId, false, "Barang rusak");
+        assertThat(result.getApprovalStatus()).isEqualTo("REJECTED");
+        assertThat(result.getRejectionReason()).isEqualTo("Barang rusak");
+    }
+
+    @Test
+    void mandorApproveFromMuatShouldThrowIllegalState() {
+        Delivery delivery = buildDelivery("MEMUAT");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+
+        assertThatThrownBy(() -> deliveryService.mandorApprove(deliveryId, true, null))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void mandorApproveNotFoundShouldThrowRuntime() {
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> deliveryService.mandorApprove(deliveryId, true, null))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("tidak ditemukan");
+    }
+
+    @Test
+    void adminApproveApproveFromTibaDiTujuanShouldRemainApproved() {
+        Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        delivery.setApprovalStatus("APPROVED");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+        when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Delivery result = deliveryService.adminApprove(deliveryId, true, 180.0, null);
+        assertThat(result.getApprovalStatus()).isEqualTo("APPROVED");
+        assertThat(result.getApprovedPayloadKg()).isEqualTo(180.0);
+    }
+
+    @Test
+    void adminApproveRejectFromTibaDiTujuanShouldBeRejected() {
+        Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        delivery.setApprovalStatus("APPROVED");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+        when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Delivery result = deliveryService.adminApprove(deliveryId, false, null, "Dokumen kurang");
+        assertThat(result.getApprovalStatus()).isEqualTo("REJECTED");
+        assertThat(result.getRejectionReason()).isEqualTo("Dokumen kurang");
+    }
+
+    @Test
+    void adminApproveFromMengirimShouldThrowIllegalState() {
+        Delivery delivery = buildDelivery("MENGIRIM");
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
+
+        assertThatThrownBy(() -> deliveryService.adminApprove(deliveryId, true, 180.0, null))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void adminApproveNotFoundShouldThrowRuntime() {
+        when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> deliveryService.adminApprove(deliveryId, true, 180.0, null))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("tidak ditemukan");
+    }
+}

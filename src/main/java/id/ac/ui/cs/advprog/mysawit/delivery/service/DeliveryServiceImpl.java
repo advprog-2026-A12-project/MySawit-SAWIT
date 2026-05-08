@@ -2,12 +2,13 @@ package id.ac.ui.cs.advprog.mysawit.delivery.service;
 
 import id.ac.ui.cs.advprog.mysawit.delivery.dto.CreateDeliveryRequest;
 import id.ac.ui.cs.advprog.mysawit.delivery.model.Delivery;
+import id.ac.ui.cs.advprog.mysawit.delivery.model.state.DeliveryState;
+import id.ac.ui.cs.advprog.mysawit.delivery.model.state.DeliveryStateFactory;
 import id.ac.ui.cs.advprog.mysawit.delivery.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,8 +19,6 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final DeliveryRepository deliveryRepository;
 
     private static final String STATUS_MEMUAT = "MEMUAT";
-    private static final String STATUS_MENGIRIM = "MENGIRIM";
-    private static final String STATUS_TIBA = "TIBA_DI_TUJUAN";
 
     @Override
     @Transactional
@@ -31,11 +30,13 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = Delivery.builder()
                 .supirId(request.getSupirId())
                 .supirName(request.getSupirName())
-                .harvestId(request.getHarvestId())
+                .harvestIds(request.getHarvestIds())
                 .mandorId(mandorId)
                 .mandorName(mandorName)
                 .payloadKg(request.getPayloadKg())
                 .status(STATUS_MEMUAT)
+                .approvalStatus("PENDING")
+                .tanggal(java.time.LocalDateTime.now())
                 .build();
 
         return deliveryRepository.save(delivery);
@@ -70,17 +71,8 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery tidak ditemukan"));
 
-        String current = delivery.getStatus();
-
-        if (STATUS_MEMUAT.equals(current)) {
-            delivery.setStatus(STATUS_MENGIRIM);
-            delivery.setSentAt(LocalDateTime.now());
-        } else if (STATUS_MENGIRIM.equals(current)) {
-            delivery.setStatus(STATUS_TIBA);
-            delivery.setArrivedAt(LocalDateTime.now());
-        } else {
-            throw new IllegalStateException("Status sudah final: " + current + ". Tidak dapat dilanjutkan.");
-        }
+        DeliveryState state = DeliveryStateFactory.getState(delivery.getStatus());
+        state.advanceStatus(delivery);
 
         return deliveryRepository.save(delivery);
     }
@@ -91,13 +83,21 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery tidak ditemukan"));
 
+        if (!"TIBA_DI_TUJUAN".equals(delivery.getStatus())) {
+            throw new IllegalStateException("Persetujuan Mandor hanya dapat dilakukan pada status TIBA_DI_TUJUAN");
+        }
+        if (!"PENDING".equals(delivery.getApprovalStatus())) {
+            throw new IllegalStateException("Pengiriman sudah diproses persetujuannya");
+        }
+
         if (isApproved) {
-            delivery.setStatus("DISETUJUI_MANDOR");
+            delivery.setApprovalStatus("APPROVED");
             delivery.setRejectionReason(null);
         } else {
-            delivery.setStatus("DITOLAK_MANDOR");
+            delivery.setApprovalStatus("REJECTED");
             delivery.setRejectionReason(rejectionReason);
         }
+
         return deliveryRepository.save(delivery);
     }
 
@@ -107,14 +107,44 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery tidak ditemukan"));
 
+        if (!"TIBA_DI_TUJUAN".equals(delivery.getStatus())) {
+            throw new IllegalStateException("Persetujuan Admin hanya dapat dilakukan pada status TIBA_DI_TUJUAN");
+        }
+        if (!"APPROVED".equals(delivery.getApprovalStatus())) {
+            throw new IllegalStateException("Persetujuan Admin memerlukan persetujuan Mandor terlebih dahulu");
+        }
+
         if (isApproved) {
-            delivery.setStatus("SELESAI");
+            delivery.setApprovalStatus("APPROVED");
             delivery.setApprovedPayloadKg(approvedPayloadKg != null ? approvedPayloadKg : delivery.getPayloadKg());
             delivery.setRejectionReason(null);
         } else {
-            delivery.setStatus("DITOLAK_ADMIN");
+            delivery.setApprovalStatus("REJECTED");
             delivery.setRejectionReason(rejectionReason);
         }
+
         return deliveryRepository.save(delivery);
+    }
+
+    @Override
+    public List<Delivery> getDeliveriesForAdmin(UUID mandorId, String date) {
+        List<Delivery> deliveries = deliveryRepository.findAll();
+
+        if (mandorId != null) {
+            deliveries = deliveries.stream()
+                    .filter(d -> mandorId.equals(d.getMandorId()))
+                    .toList();
+        }
+
+        if (date != null && !date.isEmpty()) {
+            deliveries = deliveries.stream()
+                    .filter(d -> {
+                        String deliveryDate = d.getCreatedAt().toLocalDate().toString();
+                        return deliveryDate.equals(date);
+                    })
+                    .toList();
+        }
+
+        return deliveries;
     }
 }
