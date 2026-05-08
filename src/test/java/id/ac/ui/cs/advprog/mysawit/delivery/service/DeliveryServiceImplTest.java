@@ -46,7 +46,7 @@ class DeliveryServiceImplTest {
         CreateDeliveryRequest req = new CreateDeliveryRequest();
         req.setSupirId(supirId);
         req.setSupirName("Andi Supir");
-        req.setHarvestId(harvestId);
+        req.setHarvestIds(List.of(harvestId));
         req.setPayloadKg(payload);
         return req;
     }
@@ -55,7 +55,7 @@ class DeliveryServiceImplTest {
         return Delivery.builder()
                 .supirId(supirId)
                 .mandorId(mandorId)
-                .harvestId(harvestId)
+                .harvestIds(List.of(harvestId))
                 .payloadKg(200.0)
                 .status(status)
                 .build();
@@ -183,8 +183,8 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void advanceStatusFromSelesaiShouldThrowIllegalState() {
-        Delivery delivery = buildDelivery("SELESAI");
+    void advanceStatusFromTibaDiTujuanShouldThrowIllegalState() {
+        Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
 
         assertThatThrownBy(() -> deliveryService.advanceStatus(deliveryId))
@@ -201,23 +201,25 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void mandorApproveApproveFromTibaDiTujuanShouldBeDisetujuiMandor() {
+    void mandorApproveApproveFromTibaDiTujuanShouldBeApproved() {
         Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        delivery.setApprovalStatus("PENDING");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.mandorApprove(deliveryId, true, null);
-        assertThat(result.getStatus()).isEqualTo("DISETUJUI_MANDOR");
+        assertThat(result.getApprovalStatus()).isEqualTo("APPROVED");
     }
 
     @Test
-    void mandorApproveRejectFromTibaDiTujuanShouldBeDitolakMandor() {
+    void mandorApproveRejectFromTibaDiTujuanShouldBeRejected() {
         Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        delivery.setApprovalStatus("PENDING");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.mandorApprove(deliveryId, false, "Barang rusak");
-        assertThat(result.getStatus()).isEqualTo("DITOLAK_MANDOR");
+        assertThat(result.getApprovalStatus()).isEqualTo("REJECTED");
         assertThat(result.getRejectionReason()).isEqualTo("Barang rusak");
     }
 
@@ -240,24 +242,26 @@ class DeliveryServiceImplTest {
     }
 
     @Test
-    void adminApproveApproveFromDisetujuiMandorShouldBeSelesai() {
-        Delivery delivery = buildDelivery("DISETUJUI_MANDOR");
+    void adminApproveApproveFromTibaDiTujuanShouldRemainApproved() {
+        Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        delivery.setApprovalStatus("APPROVED");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.adminApprove(deliveryId, true, 180.0, null);
-        assertThat(result.getStatus()).isEqualTo("SELESAI");
+        assertThat(result.getApprovalStatus()).isEqualTo("APPROVED");
         assertThat(result.getApprovedPayloadKg()).isEqualTo(180.0);
     }
 
     @Test
-    void adminApproveRejectFromDisetujuiMandorShouldBeDitolakAdmin() {
-        Delivery delivery = buildDelivery("DISETUJUI_MANDOR");
+    void adminApproveRejectFromTibaDiTujuanShouldBeRejected() {
+        Delivery delivery = buildDelivery("TIBA_DI_TUJUAN");
+        delivery.setApprovalStatus("APPROVED");
         when(deliveryRepository.findById(deliveryId)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Delivery result = deliveryService.adminApprove(deliveryId, false, null, "Dokumen kurang");
-        assertThat(result.getStatus()).isEqualTo("DITOLAK_ADMIN");
+        assertThat(result.getApprovalStatus()).isEqualTo("REJECTED");
         assertThat(result.getRejectionReason()).isEqualTo("Dokumen kurang");
     }
 

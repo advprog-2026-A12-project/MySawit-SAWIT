@@ -33,24 +33,4 @@ class TibaDiTujuanStateTest {
                 .hasMessageContaining("tiba di tujuan");
     }
 
-    @Test
-    void mandorApproveApprovedShouldTransitionToDisetujuiMandor() {
-        state.mandorApprove(delivery, true, null);
-        assertThat(delivery.getStatus()).isEqualTo("DISETUJUI_MANDOR");
-        assertThat(delivery.getRejectionReason()).isNull();
-    }
-
-    @Test
-    void mandorApproveRejectedShouldTransitionToDitolakMandor() {
-        state.mandorApprove(delivery, false, "Barang rusak");
-        assertThat(delivery.getStatus()).isEqualTo("DITOLAK_MANDOR");
-        assertThat(delivery.getRejectionReason()).isEqualTo("Barang rusak");
-    }
-
-    @Test
-    void adminApproveShouldThrowIllegalStateException() {
-        assertThatThrownBy(() -> state.adminApprove(delivery, true, 200.0, null))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("TIBA_DI_TUJUAN");
-    }
 }

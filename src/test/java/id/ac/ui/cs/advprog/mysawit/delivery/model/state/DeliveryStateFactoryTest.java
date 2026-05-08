@@ -26,30 +26,6 @@ class DeliveryStateFactoryTest {
     }
 
     @Test
-    void getStateDisetujuiMandorShouldReturnDisetujuiMandorState() {
-        DeliveryState state = DeliveryStateFactory.getState("DISETUJUI_MANDOR");
-        assertThat(state).isInstanceOf(DisetujuiMandorState.class);
-    }
-
-    @Test
-    void getStateDitolakMandorShouldReturnDitolakMandorState() {
-        DeliveryState state = DeliveryStateFactory.getState("DITOLAK_MANDOR");
-        assertThat(state).isInstanceOf(DitolakMandorState.class);
-    }
-
-    @Test
-    void getStateSelesaiShouldReturnSelesaiState() {
-        DeliveryState state = DeliveryStateFactory.getState("SELESAI");
-        assertThat(state).isInstanceOf(SelesaiState.class);
-    }
-
-    @Test
-    void getStateDitolakAdminShouldReturnDitolakAdminState() {
-        DeliveryState state = DeliveryStateFactory.getState("DITOLAK_ADMIN");
-        assertThat(state).isInstanceOf(DitolakAdminState.class);
-    }
-
-    @Test
     void getStateUnknownShouldThrowIllegalArgumentException() {
         assertThatThrownBy(() -> DeliveryStateFactory.getState("STATUS_TIDAK_ADA"))
                 .isInstanceOf(IllegalArgumentException.class)

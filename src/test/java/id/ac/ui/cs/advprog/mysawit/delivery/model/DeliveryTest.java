@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.mysawit.delivery.model;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +16,7 @@ class DeliveryTest {
                 .supirName("Andi Supir")
                 .mandorId(UUID.randomUUID())
                 .mandorName("Budi Mandor")
-                .harvestId(UUID.randomUUID())
+                .harvestIds(List.of(UUID.randomUUID()))
                 .payloadKg(200.0)
                 .build();
     }
@@ -37,7 +38,7 @@ class DeliveryTest {
                 .supirName("Supir A")
                 .mandorId(mandorId)
                 .mandorName("Mandor B")
-                .harvestId(harvestId)
+                .harvestIds(List.of(harvestId))
                 .payloadKg(350.0)
                 .approvedPayloadKg(300.0)
                 .status("MENGIRIM")
@@ -48,7 +49,7 @@ class DeliveryTest {
         assertThat(delivery.getSupirName()).isEqualTo("Supir A");
         assertThat(delivery.getMandorId()).isEqualTo(mandorId);
         assertThat(delivery.getMandorName()).isEqualTo("Mandor B");
-        assertThat(delivery.getHarvestId()).isEqualTo(harvestId);
+        assertThat(delivery.getHarvestIds()).containsExactly(harvestId);
         assertThat(delivery.getPayloadKg()).isEqualTo(350.0);
         assertThat(delivery.getApprovedPayloadKg()).isEqualTo(300.0);
         assertThat(delivery.getStatus()).isEqualTo("MENGIRIM");

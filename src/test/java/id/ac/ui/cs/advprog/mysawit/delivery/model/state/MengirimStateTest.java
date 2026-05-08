@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MengirimStateTest {
 
@@ -33,17 +32,4 @@ class MengirimStateTest {
         assertThat(delivery.getArrivedAt()).isNotNull();
     }
 
-    @Test
-    void mandorApproveShouldThrowIllegalStateException() {
-        assertThatThrownBy(() -> state.mandorApprove(delivery, true, null))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("MENGIRIM");
-    }
-
-    @Test
-    void adminApproveShouldThrowIllegalStateException() {
-        assertThatThrownBy(() -> state.adminApprove(delivery, true, 200.0, null))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("MENGIRIM");
-    }
 }
