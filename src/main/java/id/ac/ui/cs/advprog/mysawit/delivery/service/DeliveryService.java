@@ -20,4 +20,6 @@ public interface DeliveryService {
     Delivery mandorApprove(UUID id, boolean isApproved, String rejectionReason);
 
     Delivery adminApprove(UUID id, boolean isApproved, Double approvedPayloadKg, String rejectionReason);
+
+    List<Delivery> getDeliveriesForAdmin(UUID mandorId, String date);
 }

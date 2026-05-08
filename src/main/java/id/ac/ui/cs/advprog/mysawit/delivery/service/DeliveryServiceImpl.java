@@ -125,4 +125,26 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         return deliveryRepository.save(delivery);
     }
+
+    @Override
+    public List<Delivery> getDeliveriesForAdmin(UUID mandorId, String date) {
+        List<Delivery> deliveries = deliveryRepository.findAll();
+
+        if (mandorId != null) {
+            deliveries = deliveries.stream()
+                    .filter(d -> mandorId.equals(d.getMandorId()))
+                    .toList();
+        }
+
+        if (date != null && !date.isEmpty()) {
+            deliveries = deliveries.stream()
+                    .filter(d -> {
+                        String deliveryDate = d.getCreatedAt().toLocalDate().toString();
+                        return deliveryDate.equals(date);
+                    })
+                    .toList();
+        }
+
+        return deliveries;
+    }
 }
