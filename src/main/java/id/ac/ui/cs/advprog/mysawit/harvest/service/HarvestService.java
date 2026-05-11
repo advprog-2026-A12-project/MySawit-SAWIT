@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestDetailResponse;
 import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestRequest;
 import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestResponse;
 import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,4 +42,6 @@ public interface HarvestService {
     HarvestResponse rejectPanen(UUID harvestId, UUID mandorId, String alasan);
 
     void deleteHarvest(UUID harvestId);
+
+    void savePhotos(UUID harvestId, List<MultipartFile> photos);
 }

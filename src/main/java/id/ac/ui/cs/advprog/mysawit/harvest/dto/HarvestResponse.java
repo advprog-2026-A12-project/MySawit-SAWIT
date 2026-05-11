@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -18,4 +19,5 @@ public class HarvestResponse {
     private HarvestStatus status;
     private String rejectionReason;    
     private Boolean bisaDiangkutTruk;
+    private List<String> photos;
 }

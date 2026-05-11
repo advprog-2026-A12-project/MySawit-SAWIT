@@ -1,21 +1,36 @@
 package id.ac.ui.cs.advprog.mysawit.harvest.controller;
 
 import id.ac.ui.cs.advprog.mysawit.harvest.client.AuthClient;
-import id.ac.ui.cs.advprog.mysawit.harvest.dto.*;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.ApproveRejectRequest;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestDetailResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestRequest;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.HarvestResponse;
+import id.ac.ui.cs.advprog.mysawit.harvest.dto.UserProfile;
 import id.ac.ui.cs.advprog.mysawit.harvest.model.HarvestStatus;
 import id.ac.ui.cs.advprog.mysawit.harvest.service.HarvestService;
-import id.ac.ui.cs.advprog.mysawit.harvest.service.HarvestServiceImpl;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @CrossOrigin(origins = "*")
@@ -25,47 +40,21 @@ import java.util.UUID;
 public class HarvestController {
 
     private final HarvestService harvestService;
-    private final HarvestServiceImpl harvestServiceImpl;
     private final AuthClient authClient;
 
     // =========================
-    // HELPERS
-    // =========================
-    private String extractToken(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("Missing or invalid Authorization header");
-        }
-        return authHeader.substring(7);
-    }
-
-    private ResponseEntity<?> forbiddenRole(String expected, String actual) {
-        return ResponseEntity.status(403).body(
-                Map.of("error",
-                        "Akses ditolak. Role dibutuhkan: " + expected + ", role kamu: " + actual)
-        );
-    }
-
-    // =========================
-    // BURUH: SUBMIT JSON
+    // BURUH: SUBMIT JSON (Tanpa Foto)
     // =========================
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('BURUH')")
     public ResponseEntity<?> submitJson(
             @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody HarvestRequest body
     ) {
-        String token = extractToken(authHeader);
-
+        String token = authHeader.substring(7);
         UserProfile user = authClient.getMe(token);
 
-        if (!"BURUH".equals(user.getRole())) {
-            return forbiddenRole("BURUH", user.getRole());
-        }
-
-        UUID buruhId = user.getId();
-        UUID mandorId = user.getMandorId();
-
-        HarvestResponse response = harvestService.submitHarvest(body, buruhId, mandorId);
-
+        HarvestResponse response = harvestService.submitHarvest(body, user.getId(), user.getMandorId());
         return ResponseEntity.status(201).body(response);
     }
 
@@ -73,26 +62,22 @@ public class HarvestController {
     // BURUH: SUBMIT MULTIPART + FOTO
     // =========================
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('BURUH')")
     public ResponseEntity<?> submitMultipart(
             @RequestHeader("Authorization") String authHeader,
             @Valid @ModelAttribute HarvestRequest body,
-            @RequestPart(required = false) List<MultipartFile> photos
+            // UBAH JADI RequestParam AGAR COCOK DENGAN NEXT.JS FormData
+            @RequestParam(value = "photos", required = false) List<MultipartFile> photos
     ) {
-        String token = extractToken(authHeader);
-
+        String token = authHeader.substring(7);
         UserProfile user = authClient.getMe(token);
 
-        if (!"BURUH".equals(user.getRole())) {
-            return forbiddenRole("BURUH", user.getRole());
-        }
+        // 1. Save data laporan
+        HarvestResponse response = harvestService.submitHarvest(body, user.getId(), user.getMandorId());
 
-        UUID buruhId = user.getId();
-        UUID mandorId = user.getMandorId();
-
-        HarvestResponse response = harvestService.submitHarvest(body, buruhId, mandorId);
-
+        // 2. Jika ada foto, upload dan simpan
         if (photos != null && !photos.isEmpty()) {
-            harvestServiceImpl.savePhotos(response.getId(), photos);
+            harvestService.savePhotos(response.getId(), photos);
         }
 
         return ResponseEntity.status(201).body(response);
@@ -102,6 +87,7 @@ public class HarvestController {
     // BURUH: MY HARVEST
     // =========================
     @GetMapping("/my")
+    @PreAuthorize("hasRole('BURUH')")
     public ResponseEntity<?> myHarvest(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam(required = false)
@@ -110,13 +96,8 @@ public class HarvestController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) HarvestStatus status
     ) {
-        String token = extractToken(authHeader);
-
+        String token = authHeader.substring(7);
         UserProfile user = authClient.getMe(token);
-
-        if (!"BURUH".equals(user.getRole())) {
-            return forbiddenRole("BURUH", user.getRole());
-        }
 
         return ResponseEntity.ok(
                 harvestService.getMyHarvest(user.getId(), startDate, endDate, status)
@@ -127,24 +108,18 @@ public class HarvestController {
     // MANDOR: BAWAHAN
     // =========================
     @GetMapping("/bawahan")
+    @PreAuthorize("hasRole('MANDOR')")
     public ResponseEntity<?> panenBawahan(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam(required = false) UUID buruhId,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tanggalPanen
     ) {
-        String token = extractToken(authHeader);
-
+        String token = authHeader.substring(7);
         UserProfile user = authClient.getMe(token);
 
-        if (!"MANDOR".equals(user.getRole())) {
-            return forbiddenRole("MANDOR", user.getRole());
-        }
-
-        UUID mandorId = user.getId();
-
         return ResponseEntity.ok(
-                harvestService.getPanenBawahan(mandorId, buruhId, tanggalPanen)
+                harvestService.getPanenBawahan(user.getId(), buruhId, tanggalPanen)
         );
     }
 
@@ -152,17 +127,13 @@ public class HarvestController {
     // MANDOR: APPROVE
     // =========================
     @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasRole('MANDOR')")
     public ResponseEntity<?> approvePanen(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID id
     ) {
-        String token = extractToken(authHeader);
-
+        String token = authHeader.substring(7);
         UserProfile user = authClient.getMe(token);
-
-        if (!"MANDOR".equals(user.getRole())) {
-            return forbiddenRole("MANDOR", user.getRole());
-        }
 
         return ResponseEntity.ok(
                 harvestService.approvePanen(id, user.getId())
@@ -173,18 +144,14 @@ public class HarvestController {
     // MANDOR: REJECT
     // =========================
     @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasRole('MANDOR')")
     public ResponseEntity<?> rejectPanen(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID id,
             @RequestBody ApproveRejectRequest body
     ) {
-        String token = extractToken(authHeader);
-
+        String token = authHeader.substring(7);
         UserProfile user = authClient.getMe(token);
-
-        if (!"MANDOR".equals(user.getRole())) {
-            return forbiddenRole("MANDOR", user.getRole());
-        }
 
         return ResponseEntity.ok(
                 harvestService.rejectPanen(
