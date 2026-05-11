@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mysawit.harvest.security;
+package id.ac.ui.cs.advprog.mysawit.delivery.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -8,11 +8,10 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-
 import javax.crypto.SecretKey;
 import java.util.UUID;
 
-@Component("harvestJwtUtil")
+@Component("deliveryJwtUtil")
 public class JwtUtil {
 
     private final SecretKey signingKey;
@@ -20,6 +19,7 @@ public class JwtUtil {
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     }
+
     public Claims parseToken(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)

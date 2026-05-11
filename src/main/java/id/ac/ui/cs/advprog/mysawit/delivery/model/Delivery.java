@@ -15,7 +15,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import jakarta.persistence.ElementCollection;
 
+import java.util.List;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -42,8 +44,8 @@ public class Delivery {
 
     private String mandorName;
 
-    @NotNull
-    private UUID harvestId;
+    @ElementCollection
+    private List<UUID> harvestIds;
 
     @Min(1)
     @Max(400)
@@ -54,6 +56,9 @@ public class Delivery {
     @Builder.Default
     private String status = "MEMUAT";
 
+    @Builder.Default
+    private String approvalStatus = "PENDING";
+
     private String rejectionReason;
 
     private LocalDateTime sentAt;
@@ -62,6 +67,8 @@ public class Delivery {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    private LocalDateTime tanggal;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;

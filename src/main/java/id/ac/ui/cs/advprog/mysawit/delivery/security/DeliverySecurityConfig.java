@@ -1,11 +1,10 @@
-package id.ac.ui.cs.advprog.mysawit.harvest.security;
+package id.ac.ui.cs.advprog.mysawit.delivery.security;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,44 +16,38 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity
-public class HarvestSecurityConfig {
+public class DeliverySecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
-    public HarvestSecurityConfig(@Qualifier("harvestJwtAuthFilter") JwtAuthFilter jwtAuthFilter) {
+    public DeliverySecurityConfig(@Qualifier("deliveryJwtAuthFilter") JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    @Bean(name = "harvestSecurityFilterChain")
-    public SecurityFilterChain harvestFilterChain(HttpSecurity http) throws Exception {
+    @Bean(name = "deliverySecurityFilterChain")
+    public SecurityFilterChain deliveryFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/harvest/**")
+                .securityMatcher("/api/deliveries/**", "/api/supir-list")
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/harvest/health").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 3. Konfigurasi global CORS untuk mengizinkan origin dari frontend Next.js
-    @Bean(name = "harvestCorsConfigurationSource")
+    @Bean(name = "deliveryCorsConfigurationSource")
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://mysawit-fe.onrender.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/harvest/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }
